@@ -2,6 +2,7 @@ import request from "supertest";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.js";
 import { getDb } from "../src/db/client.js";
+import { resetLoginLockout } from "../src/routes/auth.js";
 import { seedWorker, useTestDb } from "./helpers.js";
 
 const app = createApp();
@@ -52,6 +53,8 @@ describe("sync", () => {
     useTestDb("test-sync.db");
     seedWorker("w1", "1234", "Asha One", "VillageA");
     seedWorker("w2", "5678", "Asha Two", "VillageB");
+    seedWorker("w3", "9999", "Asha Three", "VillageC");
+    resetLoginLockout();
   });
 
   // The login rate limiter (10/15min per IP) is shared across this file, so
@@ -74,6 +77,16 @@ describe("sync", () => {
     expect(ok.body.token).toBeTruthy();
     const bad = await request(app).post("/api/auth/login").send({ workerId: "w1", pin: "0000" });
     expect(bad.status).toBe(401);
+  });
+
+  it("locks an account after 5 wrong PINs, even for the right PIN", async () => {
+    for (let i = 0; i < 5; i++) {
+      const r = await request(app).post("/api/auth/login").send({ workerId: "w3", pin: "0000" });
+      expect(r.status).toBe(401);
+    }
+    const locked = await request(app).post("/api/auth/login").send({ workerId: "w3", pin: "9999" });
+    expect(locked.status).toBe(429);
+    expect(locked.body.error.code).toBe("ACCOUNT_LOCKED");
   });
 
   it("sync upserts + is idempotent on replay", async () => {

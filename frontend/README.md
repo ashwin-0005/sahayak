@@ -36,8 +36,12 @@ npm run typecheck  # tsc --noEmit
   manual "Sync now" buttons. Exponential backoff 5s → 5min cap. Last-write-wins on
   `updated_at`; the server always recomputes risk, so server risk fields win.
 - **Offline unlock**: the worker's PIN is never stored. On first (online) login we
-  cache `pinHash = sha256(salt + ":" + pin)` where `salt = workerId + ":" + uuid`.
-  Offline unlock compares against that hash; no network needed.
+  cache `pinHash = PBKDF2-SHA256(pin, salt, 100k iterations)` where
+  `salt = workerId + ":" + uuid`. Offline unlock compares against that hash; no
+  network needed. 5 wrong offline PINs lock the device for 15 minutes; legacy
+  single-SHA-256 hashes upgrade transparently on next successful entry.
+  **"Log out"** wipes all local data (patients, visits, outbox, quarantine,
+  session, PIN hash).
 - **Consent**: registering a patient requires the consent sheet; `consent_given`
   is set only after the worker confirms.
 

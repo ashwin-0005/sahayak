@@ -1,11 +1,13 @@
 import { useTranslation } from "react-i18next";
-import { CloudOff, RefreshCw, AlertTriangle, Check, Clock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { CloudOff, KeyRound, RefreshCw, AlertTriangle, Check, Clock } from "lucide-react";
 import { useSync } from "../sync/useSync";
 import { formatTime } from "../lib/dates";
 import { useSlowNotice } from "../lib/useSlow";
 
 export function SyncStatus({ onSynced }: { onSynced?: () => void }) {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const sync = useSync();
   const slowSync = useSlowNotice(sync.status === "syncing");
 
@@ -49,7 +51,11 @@ export function SyncStatus({ onSynced }: { onSynced?: () => void }) {
         {sync.pending > 0 && (
           <span className="tag bg-clinic text-ink">{pendingLabel}</span>
         )}
-        {sync.status === "syncing" && slowSync ? (
+        {sync.authExpired ? (
+          <span role="alert" className="text-base font-bold text-urgent">
+            {t("status.authExpired")}
+          </span>
+        ) : sync.status === "syncing" && slowSync ? (
           <span role="status" className="text-base text-neem-dark">
             {t("status.slowSync")}
           </span>
@@ -59,10 +65,17 @@ export function SyncStatus({ onSynced }: { onSynced?: () => void }) {
           {sync.lastSyncedAt ? t("status.lastSync", { time: formatTime(sync.lastSyncedAt, i18n.language) }) : t("status.never")}
         </span>
       </div>
-      <button type="button" className="btn-secondary" onClick={() => void sync.syncNow().then(() => onSynced?.())}>
-        <RefreshCw className="size-5" aria-hidden="true" />
-        {t("status.syncNow")}
-      </button>
+      {sync.authExpired ? (
+        <button type="button" className="btn-secondary" onClick={() => navigate("/login")}>
+          <KeyRound className="size-5" aria-hidden="true" />
+          {t("status.relogin")}
+        </button>
+      ) : (
+        <button type="button" className="btn-secondary" onClick={() => void sync.syncNow().then(() => onSynced?.())}>
+          <RefreshCw className="size-5" aria-hidden="true" />
+          {t("status.syncNow")}
+        </button>
+      )}
     </div>
   );
 }

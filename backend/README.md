@@ -17,9 +17,14 @@ Env vars (`src/config.ts`, defaults in parentheses):
 | Var | Default | Purpose |
 |-----|---------|---------|
 | `PORT` | `4000` | HTTP port |
-| `JWT_SECRET` | `change-me-...` | JWT signing key (12h expiry). Startup warns if default. |
-| `CORS_ORIGIN` | `*` | CORS origin |
+| `JWT_SECRET` | `change-me-...` | JWT signing key (12h expiry). **Production refuses to boot** with the default or any secret < 32 chars. |
+| `CORS_ORIGIN` | `*` | CORS origin. **Production refuses to boot** with `*` — set the exact frontend origin. |
 | `DB_PATH` | `./data/sahayak.db` | SQLite file (auto-created) |
+
+Production also requires `NODE_ENV=production` and TLS termination at the
+host (Render/Vercel provide this); the API itself serves plain HTTP. Login is
+additionally guarded per account: 5 wrong PINs lock that worker for 15 min
+(`ACCOUNT_LOCKED`), on top of the 10/15min/IP limiter.
 
 Scripts: `npm run dev` (tsx watch), `npm run build` + `npm start` (prod), `npm test` (vitest), `npm run seed`.
 

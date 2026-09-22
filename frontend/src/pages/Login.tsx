@@ -45,6 +45,8 @@ export default function LoginPage() {
     } catch (e) {
       if (e instanceof ApiErrorClass && e.code === "TIMEOUT") {
         setError(t("login.timeoutError"));
+      } else if (e instanceof ApiErrorClass && e.code === "LOCKED_OUT") {
+        setError(t("login.lockedOut"));
       } else {
         setError(t("login.error"));
       }

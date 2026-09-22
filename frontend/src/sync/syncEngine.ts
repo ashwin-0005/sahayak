@@ -1,4 +1,5 @@
-import { postSync } from "../lib/api";
+import { postSync, ApiErrorClass } from "../lib/api";
+import { isTokenExpired } from "../auth/auth";
 import {
   addToQuarantine,
   applyPatientFromServer,
@@ -44,6 +45,7 @@ export interface SyncState {
   pending: number;
   lastSyncedAt: string | null;
   inFlight: boolean;
+  authExpired: boolean;
 }
 
 const listeners = new Set<Listener>();
@@ -51,19 +53,20 @@ let status: SyncStatus = "idle";
 let lastSyncedAt: string | null = null;
 let pending = 0;
 let inFlight = false;
+let authExpired = false;
 let retryTimer: ReturnType<typeof setTimeout> | null = null;
 let backoffMs = 5000;
 const MAX_BACKOFF_MS = 5 * 60 * 1000;
 let syncId = 0;
 
 function emit(): void {
-  const state: SyncState = { status, pending, lastSyncedAt, inFlight };
+  const state: SyncState = { status, pending, lastSyncedAt, inFlight, authExpired };
   for (const l of listeners) l(state);
 }
 
 export function subscribeSync(cb: Listener): () => void {
   listeners.add(cb);
-  cb({ status, pending, lastSyncedAt, inFlight });
+  cb({ status, pending, lastSyncedAt, inFlight, authExpired });
   return () => {
     listeners.delete(cb);
   };
@@ -92,6 +95,14 @@ export async function syncNow(): Promise<boolean> {
   const token = session?.token ?? null;
   if (!token) {
     status = status === "error" ? status : "idle";
+    emit();
+    return false;
+  }
+  // Don't burn radio/battery on a token we can see is dead — and never
+  // retry-loop an expired session. The worker must log in again.
+  if (isTokenExpired(token)) {
+    authExpired = true;
+    status = "error";
     emit();
     return false;
   }
@@ -149,11 +160,20 @@ export async function syncNow(): Promise<boolean> {
     if (id !== syncId) return false; // a newer call took over
     backoffMs = 5000;
     status = "idle";
+    authExpired = false;
     lastSyncedAt = new Date().toISOString();
     await refreshPending();
     return true;
-  } catch {
+  } catch (e) {
     if (id !== syncId) return false;
+    if (e instanceof ApiErrorClass && e.code === "UNAUTHORIZED") {
+      // Token rejected (expired/revoked): stop, do NOT retry-loop. The
+      // SyncStatus banner points the worker back to login.
+      authExpired = true;
+      status = "error";
+      emit();
+      return false;
+    }
     status = "error";
     emit();
     scheduleRetry();
@@ -239,5 +259,5 @@ export async function initSyncEngine(): Promise<void> {
 }
 
 export function getSyncSnapshot(): SyncState {
-  return { status, pending, lastSyncedAt, inFlight };
+  return { status, pending, lastSyncedAt, inFlight, authExpired };
 }

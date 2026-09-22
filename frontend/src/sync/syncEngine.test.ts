@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { db } from "../db/db.js";
 import { createPatient, getAllPatients, getPendingOutbox, getQuarantine, getVisitsForPatient, setMeta } from "../db/repo";
 import { newId } from "../lib/ids";
-import { syncNow } from "./syncEngine";
+import { getSyncSnapshot, syncNow } from "./syncEngine";
 import type { Patient, Visit } from "../types";
 
 function makePatient(): Patient {
@@ -27,6 +27,12 @@ function makePatient(): Patient {
 }
 
 let fetchMock: ReturnType<typeof vi.fn>;
+let testToken: string;
+
+function liveToken(): string {
+  const b64 = (o: unknown): string => btoa(JSON.stringify(o)).replace(/=+$/, "");
+  return `${b64({ alg: "none" })}.${b64({ workerId: "asha001", exp: Math.floor(Date.now() / 1000) + 3600 })}.x`;
+}
 
 beforeEach(async () => {
   await db.transaction("rw", db.patients, db.visits, db.outbox, db.quarantine, db.meta, async () => {
@@ -37,7 +43,8 @@ beforeEach(async () => {
     await db.meta.clear();
   });
   Object.defineProperty(navigator, "onLine", { configurable: true, value: true });
-  await setMeta("auth", { token: "tok-123", workerId: "asha001" });
+  testToken = liveToken();
+  await setMeta("auth", { token: testToken, workerId: "asha001" });
   fetchMock = vi.fn();
   vi.stubGlobal("fetch", fetchMock);
 });
@@ -72,7 +79,7 @@ describe("syncEngine: push, apply, and clear on success", () => {
     // The request carried our local snapshot, without the worker's own id.
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(init.headers).toMatchObject({ Authorization: "Bearer tok-123" });
+    expect(init.headers).toMatchObject({ Authorization: `Bearer ${testToken}` });
     const body = JSON.parse(init.body as string) as { patients: Record<string, unknown>[]; visits: unknown[] };
     expect(body.patients).toHaveLength(1);
     expect(body.patients[0].worker_id).toBeUndefined();
@@ -191,5 +198,31 @@ describe("syncEngine: push, apply, and clear on success", () => {
     const q = await getQuarantine();
     expect(q).toHaveLength(1);
     expect(q[0].code).toBe("CORRUPT_RECORD");
+  });
+
+  it("flags auth-expired without network when the cached token is dead", async () => {
+    await createPatient(makePatient());
+    const expired = `${btoa(JSON.stringify({ alg: "none" }))}.${btoa(JSON.stringify({ workerId: "asha001", exp: 1 }))}.x`;
+    await setMeta("auth", { token: expired, workerId: "asha001" });
+
+    expect(await syncNow()).toBe(false);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(getSyncSnapshot().authExpired).toBe(true);
+    // Outbox untouched — the worker logs in again and syncs.
+    expect(await getPendingOutbox()).toHaveLength(1);
+  });
+
+  it("flags auth-expired on 401 instead of retry-looping", async () => {
+    await createPatient(makePatient());
+    const live = `${btoa(JSON.stringify({ alg: "none" }))}.${btoa(JSON.stringify({ workerId: "asha001", exp: Math.floor(Date.now() / 1000) + 3600 }))}.x`;
+    await setMeta("auth", { token: live, workerId: "asha001" });
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({ error: { code: "UNAUTHORIZED", message: "Invalid or expired token" } })
+    });
+
+    expect(await syncNow()).toBe(false);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(getSyncSnapshot().authExpired).toBe(true);
   });
 });

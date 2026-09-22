@@ -31,6 +31,7 @@
     "enterPin": "Enter your 4-digit PIN",
     "submit": "Unlock",
     "error": "Incorrect worker ID or PIN.",
+    "lockedOut": "Too many wrong attempts. Try again in 15 minutes.",
     "errorNetwork": "No connection. Checking saved PIN...",
     "unlockOffline": "You are offline. Enter your PIN to unlock.",
     "waking": "Waking up the server, this can take up to a minute.",
@@ -59,7 +60,9 @@
     "lastSync": "Last synced {{time}}",
     "never": "Not synced yet",
     "slowSync": "Taking longer than usual — the server may be waking up.",
-    "syncNow": "Sync now"
+    "syncNow": "Sync now",
+    "authExpired": "Session expired. Log in again to keep syncing.",
+    "relogin": "Log in again"
   },
   "patients": {
     "title": "Patients",
