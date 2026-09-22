@@ -99,7 +99,6 @@ export default function App() {
     <>
       <ServerWakeBanner />
       <Routes>
-      <Route path="/login" element={<LoginPage />} />
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route

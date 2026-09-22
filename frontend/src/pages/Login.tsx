@@ -15,7 +15,8 @@ export default function LoginPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as { from?: string } | null)?.from ?? "/";
+  // "/" is the public landing page since the Landing feature — the dashboard is "/home".
+  const from = (location.state as { from?: string } | null)?.from ?? "/home";
 
   const [workerId, setWorkerId] = useState("");
   const [pin, setPin] = useState("");
