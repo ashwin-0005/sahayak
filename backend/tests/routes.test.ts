@@ -73,6 +73,17 @@ describe("routes: risk, patients, visits, due, auth", () => {
     expect(r.status).toBe(200);
     expect(Array.isArray(r.body.visits)).toBe(true);
   });
+
+  it("POST /api/sync treats a missing cursor as full pull, never 400", async () => {
+    const t = await token();
+    // Fresh devices JSON-drop an undefined lastPulledAt, so the key is absent.
+    const r = await request(app)
+      .post("/api/sync")
+      .set("Authorization", `Bearer ${t}`)
+      .send({ patients: [], visits: [] });
+    expect(r.status).toBe(200);
+    expect(r.body.serverTime).toBeTruthy();
+  });
 });
 
 describe("followUp pure functions", () => {

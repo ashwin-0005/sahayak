@@ -16,9 +16,11 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   // "/" is the public landing page since the Landing feature — the dashboard is "/home".
-  const from = (location.state as { from?: string } | null)?.from ?? "/home";
+  const from = (location.state as { from?: string; workerId?: string } | null)?.from ?? "/home";
+  // The landing page's demo button pre-fills the public demo worker ID.
+  const prefillId = (location.state as { from?: string; workerId?: string } | null)?.workerId ?? "";
 
-  const [workerId, setWorkerId] = useState("");
+  const [workerId, setWorkerId] = useState(prefillId);
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -43,12 +45,17 @@ export default function LoginPage() {
       void syncNow();
       navigate(from, { replace: true });
     } catch (e) {
-      if (e instanceof ApiErrorClass && e.code === "TIMEOUT") {
-        setError(t("login.timeoutError"));
-      } else if (e instanceof ApiErrorClass && e.code === "LOCKED_OUT") {
-        setError(t("login.lockedOut"));
+      // Every failure gets a truthful, non-sensitive message. In particular
+      // a dead server must never masquerade as "wrong PIN".
+      if (e instanceof ApiErrorClass) {
+        if (e.code === "TIMEOUT") setError(t("login.timeoutError"));
+        else if (e.code === "LOCKED_OUT" || e.code === "ACCOUNT_LOCKED" || e.code === "RATE_LIMITED")
+          setError(t("login.lockedOut"));
+        else if (e.code === "NO_SESSION") setError(t("login.noSavedAccount"));
+        else if (e.code === "INVALID_CREDENTIALS") setError(t("login.error"));
+        else setError(t("login.connectionError"));
       } else {
-        setError(t("login.error"));
+        setError(t("login.connectionError"));
       }
     } finally {
       setBusy(false);

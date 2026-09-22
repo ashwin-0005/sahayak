@@ -75,10 +75,17 @@ function RequireAuth({ children }: { children: JSX.Element }) {
 
   useEffect(() => {
     void (async () => {
-      const session = await getSession();
-      const locked = await isLocked();
-      setAuthed(Boolean(session) && !locked);
-      setReady(true);
+      try {
+        const session = await getSession();
+        const locked = await isLocked();
+        setAuthed(Boolean(session) && !locked);
+      } catch {
+        // Corrupt/blocked IndexedDB must never hang the splash screen:
+        // fail closed to the login route, which reports the problem.
+        setAuthed(false);
+      } finally {
+        setReady(true);
+      }
     })();
   }, []);
 

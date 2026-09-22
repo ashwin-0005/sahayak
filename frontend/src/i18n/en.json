@@ -32,6 +32,8 @@
     "submit": "Unlock",
     "error": "Incorrect worker ID or PIN.",
     "lockedOut": "Too many wrong attempts. Try again in 15 minutes.",
+    "noSavedAccount": "No saved account for this ID on this device. Connect to the internet and sign in once to set it up.",
+    "connectionError": "Can't reach the server. Check your connection and try again.",
     "errorNetwork": "No connection. Checking saved PIN...",
     "unlockOffline": "You are offline. Enter your PIN to unlock.",
     "waking": "Waking up the server, this can take up to a minute.",
@@ -248,10 +250,11 @@
     "feature2": "Tracks patients, visits, and risk with clinical rules",
     "feature3": "Syncs automatically when back online",
     "continue": "Continue to login",
-    "showDemo": "View demo credentials",
-    "hideDemo": "Hide demo credentials",
-    "demoTitle": "Demo credentials (seeded data)",
-    "worker1": "Worker 1: asha001 / 1234 (Meera Yadav, Sanwer)",
-    "worker2": "Worker 2: asha002 / 5678 (Sunita Patel, Depalpur)"
+    "showDemo": "Try the demo",
+    "hideDemo": "Hide demo",
+    "demoTitle": "Demo workspace (synthetic data)",
+    "demoId": "Demo ID: demo",
+    "demoPin": "PIN: 0000",
+    "openLogin": "Open login with demo ID"
   }
 }

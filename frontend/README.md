@@ -18,6 +18,7 @@ npm run preview    # serve dist/ (verify SW + offline launch)
 npm run icons      # regenerate PWA icons from public/icons/*.svg
 npm test           # vitest run
 npm run typecheck  # tsc --noEmit
+npm run e2e        # Playwright: real backend + prod build (see E2E below)
 ```
 
 ## Config
@@ -63,7 +64,23 @@ npm run typecheck  # tsc --noEmit
 
 Use `fake-indexeddb` (already configured in `vitest.setup.ts`).
 
+## E2E (Playwright, real backend + prod build)
+```bash
+cd backend && npm run build
+cd frontend
+VITE_API_URL=http://localhost:4100 npm run build
+npx playwright install chromium   # one time
+npm run e2e
+```
+Spins up the backend on :4100 with a fresh auto-seeded database
+(`data/e2e-demo.db`) and the preview server on :5199, then drives the demo
+login flow in Chromium: landing → demo → dashboard → refresh → logout, plus
+a wrong-PIN error case. Also wired as the `e2e` CI job.
+
 ## Assumptions
+- **Demo login**: the landing page advertises only the isolated public demo
+  account (`demo` / `0000`, synthetic workspace). Dev seeds
+  (`asha001/1234`, `asha002/5678`) are not shown in the app.
 - **WhatsApp reminder**: `wa.me` link uses digits-only phone (non-digits
   stripped); the backend does the same.
 - **"Reset demo data"** (Settings) wipes local Dexie data **and** resets sync

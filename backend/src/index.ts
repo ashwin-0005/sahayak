@@ -1,8 +1,13 @@
 import { createApp } from "./app.js";
 import { config } from "./config.js";
 import { closeDb, getDb } from "./db/client.js";
+import { ensureSeeded } from "./seed/seed.js";
 
 getDb(); // ensure schema exists
+// Re-seed on every boot when empty: hosting disks can be ephemeral, and a
+// restart without a rebuild must not leave logins broken. Idempotent —
+// skips the moment any worker exists, so synced data is never touched.
+ensureSeeded();
 const app = createApp();
 
 // Bind all interfaces so the server is reachable on hosting platforms.

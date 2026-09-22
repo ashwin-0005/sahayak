@@ -35,3 +35,10 @@ db.version(2).stores({
   quarantine: "++id, table, created_at",
   meta: "key"
 });
+
+// If another tab holds an older version open, our upgrade would block
+// forever (stuck "Loading..." on the route guard). Close on versionchange so
+// the upgrade — and the waiting tab — can proceed.
+db.on("versionchange", () => {
+  db.close();
+});

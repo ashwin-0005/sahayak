@@ -80,10 +80,12 @@ describe("syncEngine: push, apply, and clear on success", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(init.headers).toMatchObject({ Authorization: `Bearer ${testToken}` });
-    const body = JSON.parse(init.body as string) as { patients: Record<string, unknown>[]; visits: unknown[] };
+    const body = JSON.parse(init.body as string) as { patients: Record<string, unknown>[]; visits: unknown[]; lastPulledAt: string | null };
     expect(body.patients).toHaveLength(1);
     expect(body.patients[0].worker_id).toBeUndefined();
     expect(body.patients[0].id).toBe(localPatient.id);
+    // Fresh device: cursor must serialize as null, never undefined (dropped).
+    expect(body.lastPulledAt).toBeNull();
 
     // Outbox fully cleared on success — never partially consumed.
     expect(await getPendingOutbox()).toHaveLength(0);

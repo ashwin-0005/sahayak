@@ -8,9 +8,14 @@ Offline-first follow-up and adherence backend for community health workers (ASHA
 cd backend
 npm install
 cp .env.example .env   # optional; defaults work for demo
-npm run seed
+npm run seed           # also runs automatically on every boot when the DB is empty
 npm run dev            # http://localhost:4000
 ```
+
+Demo accounts (synthetic data only): the public **`demo` / `0000`** account
+(isolated demo workspace, advertised in the app) plus dev-only
+`asha001/1234` and `asha002/5678`. Seeding is idempotent — it skips the
+moment any worker exists, so production/synced data is never wiped.
 
 Env vars (`src/config.ts`, defaults in parentheses):
 

@@ -34,12 +34,14 @@ function phone(): string {
   return `9${String(int(800000000, 989999999))}`;
 }
 
-function main(): void {
+export function ensureSeeded(): void {
   const db = getDb();
   const now = new Date().toISOString();
 
-  // Idempotent: if workers already exist the database was seeded before —
-  // never wipe real/synced data by re-running the seed.
+  // Idempotent: safe to call on every boot. If workers already exist the
+  // database was seeded before — never wipe real/synced data by re-running.
+  // (Production disks can be ephemeral: a restart without a rebuild would
+  // otherwise leave an empty database and break every login.)
   const existingWorkers = (db.prepare("SELECT COUNT(*) c FROM workers").get() as { c: number }).c;
   if (existingWorkers > 0) {
     // eslint-disable-next-line no-console
@@ -54,6 +56,9 @@ function main(): void {
   const workers = [
     { id: "asha001", name: "Meera Yadav", village: "Sanwer", pin: "1234" },
     { id: "asha002", name: "Sunita Patel", village: "Depalpur", pin: "5678" },
+    // Public demo account: isolated demo-only workspace, advertised on the
+    // landing page. Real-looking worker IDs stay out of public UI.
+    { id: "demo", name: "Demo Worker", village: "Demo Village", pin: "0000" },
   ];
   for (const w of workers) {
     db.prepare("INSERT INTO workers (id, name, village, pin_hash, created_at) VALUES (?,?,?,?,?)").run(
@@ -143,6 +148,10 @@ function main(): void {
     db.prepare("UPDATE patients SET next_visit_date=?, updated_at=? WHERE id=?").run(finalNext, now, pid);
   });
 
+  // Demo-only workspace for the public "demo" account: small, clearly
+  // synthetic, and isolated by worker_id like everything else.
+  seedDemoWorkspace(db, now);
+
   const nP = (db.prepare("SELECT COUNT(*) c FROM patients").get() as { c: number }).c;
   const nV = (db.prepare("SELECT COUNT(*) c FROM visits").get() as { c: number }).c;
   // eslint-disable-next-line no-console
@@ -151,4 +160,40 @@ function main(): void {
   // never print secrets to stdout — CI/deploy logs are retained and shared.
 }
 
-main();
+// Runs only when this file is executed directly (`npm run seed` / tsx /
+// node dist/...). Importing it (e.g. server boot) must stay side-effect free.
+const invokedDirectly = (process.argv[1] ?? "").replace(/\\/g, "/").endsWith("seed/seed.ts") ||
+  (process.argv[1] ?? "").replace(/\\/g, "/").endsWith("seed/seed.js");
+if (invokedDirectly) ensureSeeded();
+
+function seedDemoWorkspace(db: ReturnType<typeof getDb>, now: string): void {
+  const demoPatients: { name: string; age: number; sex: string; condition: Condition; daysAgo: number; systolic: number | null; diastolic: number | null; sugar: number | null; sugarType: "fasting" | "random" | null }[] = [
+    { name: "Demo Devi", age: 52, sex: "F", condition: "hypertension", daysAgo: 40, systolic: 182, diastolic: 112, sugar: null, sugarType: null },
+    { name: "Demo Kumar", age: 48, sex: "M", condition: "diabetes", daysAgo: 10, systolic: null, diastolic: null, sugar: 210, sugarType: "random" },
+    { name: "Demo Bai", age: 26, sex: "F", condition: "pregnancy", daysAgo: 5, systolic: 118, diastolic: 76, sugar: null, sugarType: null },
+  ];
+  for (const p of demoPatients) {
+    const pid = randomUUID();
+    db.prepare(
+      `INSERT INTO patients (id, worker_id, name, age, sex, village, phone, "condition", language, consent_given, consent_at, next_visit_date, created_at, updated_at, deleted_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+    ).run(pid, "demo", p.name, p.age, p.sex, "Demo Village", "9000000000", p.condition, "en", 1, now, null, now, now, null);
+    const visited = new Date(now);
+    visited.setUTCDate(visited.getUTCDate() - p.daysAgo);
+    const visitedAt = visited.toISOString();
+    const risk = assessRisk({
+      condition: p.condition, age: p.age,
+      systolic: p.systolic, diastolic: p.diastolic,
+      sugarMgDl: p.sugar, sugarType: p.sugarType,
+      medicineTaken: true, missedDoses: 0, symptoms: [],
+    });
+    db.prepare(
+      // override omitted: DEFAULT 0 (no plausibility warning was overridden).
+      `INSERT INTO visits (id, patient_id, worker_id, visited_at, systolic, diastolic, sugar_mg_dl, sugar_type, medicine_taken, missed_doses, symptoms, notes, risk_level, reason_codes, advice_key, created_at, updated_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+    ).run(randomUUID(), pid, "demo", visitedAt, p.systolic, p.diastolic, p.sugar, p.sugarType,
+      1, 0, "[]", "Seeded demo visit", risk.level, JSON.stringify(risk.reasonCodes), risk.adviceKey, visitedAt, visitedAt);
+    db.prepare("UPDATE patients SET next_visit_date=?, updated_at=? WHERE id=?")
+      .run(nextVisitDate(visitedAt.slice(0, 10), risk.nextVisitInDays), now, pid);
+  }
+}

@@ -51,4 +51,94 @@ describe("Login cold-start experience", () => {
 
     expect(screen.getByText(/Waking up the server/)).toBeInTheDocument();
   });
+
+  it("maps failures to truthful messages: wrong PIN, locked account, offline setup, dead server", async () => {
+    // No timer-dependent behavior here; async queries need real timers.
+    vi.useRealTimers();
+    const errBody = (code: string) => ({
+      ok: false,
+      json: async () => ({ error: { code, message: code } })
+    });
+
+    async function submitExpecting(text: RegExp): Promise<void> {
+      fireEvent.change(screen.getByLabelText("Worker ID"), { target: { value: "asha001" } });
+      for (const d of ["1", "2", "3", "4"]) {
+        fireEvent.click(screen.getByRole("button", { name: d }));
+      }
+      fireEvent.click(screen.getByRole("button", { name: "Unlock" }));
+      expect(await screen.findByRole("alert")).toHaveTextContent(text);
+    }
+
+    // Wrong PIN -> credential message (reveals nothing about which half).
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(errBody("INVALID_CREDENTIALS")));
+    render(
+      <MemoryRouter initialEntries={["/login"]}>
+        <LoginPage />
+      </MemoryRouter>
+    );
+    await submitExpecting(/Incorrect worker ID or PIN/);
+  });
+
+  it("shows the lockout message for a server-side account lock", async () => {
+    vi.useRealTimers();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({ ok: false, json: async () => ({ error: { code: "ACCOUNT_LOCKED", message: "x" } }) })
+    );
+    render(
+      <MemoryRouter initialEntries={["/login"]}>
+        <LoginPage />
+      </MemoryRouter>
+    );
+    fireEvent.change(screen.getByLabelText("Worker ID"), { target: { value: "asha001" } });
+    for (const d of ["1", "2", "3", "4"]) {
+      fireEvent.click(screen.getByRole("button", { name: d }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Unlock" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(/Too many wrong attempts/);
+  });
+
+  it("shows a connection message when the server is unreachable (never 'wrong PIN')", { timeout: 20000 }, async () => {
+    vi.useRealTimers();
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("fetch failed")));
+    render(
+      <MemoryRouter initialEntries={["/login"]}>
+        <LoginPage />
+      </MemoryRouter>
+    );
+    fireEvent.change(screen.getByLabelText("Worker ID"), { target: { value: "asha001" } });
+    for (const d of ["1", "2", "3", "4"]) {
+      fireEvent.click(screen.getByRole("button", { name: d }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Unlock" }));
+    // Network errors retry with backoff (~7s) before surfacing.
+    const alert = await screen.findByRole("alert", undefined, { timeout: 12000 });
+    expect(alert).toHaveTextContent(/Can't reach the server/);
+    expect(alert).not.toHaveTextContent(/Incorrect/);
+  });
+
+  it("tells offline workers with no saved account how to set the device up", async () => {
+    vi.useRealTimers();
+    Object.defineProperty(navigator, "onLine", { configurable: true, value: false });
+    render(
+      <MemoryRouter initialEntries={["/login"]}>
+        <LoginPage />
+      </MemoryRouter>
+    );
+    fireEvent.change(screen.getByLabelText("Worker ID"), { target: { value: "nobody" } });
+    for (const d of ["1", "2", "3", "4"]) {
+      fireEvent.click(screen.getByRole("button", { name: d }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Unlock" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(/No saved account/);
+  });
+
+  it("pre-fills the worker ID passed from the landing demo button", () => {
+    render(
+      <MemoryRouter initialEntries={[{ pathname: "/login", state: { workerId: "demo" } }]}>
+        <LoginPage />
+      </MemoryRouter>
+    );
+    expect(screen.getByLabelText("Worker ID")).toHaveValue("demo");
+  });
 });

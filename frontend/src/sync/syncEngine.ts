@@ -112,7 +112,7 @@ export async function syncNow(): Promise<boolean> {
   emit();
 
   try {
-    const lastPulledAt = (await getMeta(LAST_PULLED_AT_KEY)) as string | null;
+    const lastPulledAt = ((await getMeta(LAST_PULLED_AT_KEY)) as string | null) ?? null;
     const pendingRows = await getPendingOutbox();
     const patients: unknown[] = [];
     const visits: unknown[] = [];

@@ -49,11 +49,19 @@ export default function LandingPage() {
           <div
             role="region"
             aria-label={t("landing.demoTitle")}
-            className="mt-3 rounded-card bg-mist p-4 text-left text-base text-ink"
+            className="mt-3 w-full max-w-[320px] rounded-card bg-mist p-4 text-left text-base text-ink"
           >
             <p className="font-semibold mb-2">{t("landing.demoTitle")}</p>
-            <p className="mb-1">{t("landing.worker1")}</p>
-            <p>{t("landing.worker2")}</p>
+            <p className="mb-1">{t("landing.demoId")}</p>
+            <p className="mb-3">{t("landing.demoPin")}</p>
+            <BigButton
+              variant="secondary"
+              className="w-full"
+              onClick={() => navigate("/login", { state: { workerId: "demo" } })}
+            >
+              {t("landing.openLogin")}
+              <ChevronRight className="size-6" aria-hidden="true" />
+            </BigButton>
           </div>
         )}
       </div>

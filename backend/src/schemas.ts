@@ -54,7 +54,9 @@ export const visitSchema = z.object({
 });
 
 export const syncSchema = z.object({
-  lastPulledAt: z.string().nullable(),
+  // nullish (not just nullable): fresh devices omit the key entirely
+  // (JSON drops undefined), and that must mean "full pull", never 400.
+  lastPulledAt: z.string().nullish(),
   // Rows are validated INDIVIDUALLY inside the route (per-record results),
   // so the envelope only checks shape: one bad row must never 400 the batch.
   patients: z.array(z.record(z.string(), z.unknown())).default([]),

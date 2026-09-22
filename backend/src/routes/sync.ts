@@ -206,7 +206,7 @@ function applyVisit(
 router.post("/", validateBody(syncSchema), (req, res) => {
   const workerId = (req as AuthRequest).workerId as string;
   const { lastPulledAt, patients, visits } = req.body as {
-    lastPulledAt: string | null;
+    lastPulledAt: string | null | undefined;
     patients: Record<string, unknown>[];
     visits: Record<string, unknown>[];
   };
