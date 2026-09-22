@@ -1,6 +1,6 @@
 import { createApp } from "./app.js";
 import { config } from "./config.js";
-import { getDb } from "./db/client.js";
+import { closeDb, getDb } from "./db/client.js";
 
 getDb(); // ensure schema exists
 const app = createApp();
@@ -8,7 +8,26 @@ const app = createApp();
 // Bind all interfaces so the server is reachable on hosting platforms.
 // Port comes from the environment via config (PORT, default 4000).
 const host = process.env.HOST ?? "0.0.0.0";
-app.listen(config.port, host, () => {
+const server = app.listen(config.port, host, () => {
   // eslint-disable-next-line no-console
   console.log(`Sahayak backend listening on ${host}:${config.port}`);
 });
+
+// Graceful shutdown: finish in-flight requests, then close SQLite cleanly so
+// a deploy restart can't truncate WAL or a half-written sync transaction.
+function shutdown(signal: string): void {
+  // eslint-disable-next-line no-console
+  console.log(`Received ${signal}, closing...`);
+  server.close(() => {
+    closeDb();
+    process.exit(0);
+  });
+  // Force out if connections hang (e.g. a 90s client timeout in flight).
+  setTimeout(() => {
+    closeDb();
+    process.exit(0);
+  }, 10_000).unref();
+}
+
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));

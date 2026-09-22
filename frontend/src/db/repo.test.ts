@@ -53,6 +53,7 @@ function makeVisit(patientId: string, over: Partial<Visit> = {}): Visit {
     risk_level: "home",
     reason_codes: ["ALL_OK"],
     advice_key: "continue_home_care",
+    override: null,
     created_at: nowIso,
     updated_at: nowIso,
     ...over

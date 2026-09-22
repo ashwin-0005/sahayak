@@ -2,7 +2,7 @@ import Database from "better-sqlite3";
 import fs from "node:fs";
 import path from "node:path";
 import { config } from "../config.js";
-import { CREATE_TABLES, CREATE_INDEXES } from "./schema.js";
+import { CREATE_TABLES, CREATE_INDEXES, MIGRATIONS } from "./schema.js";
 
 let db: Database.Database | null = null;
 
@@ -16,6 +16,13 @@ export function getDb(): Database.Database {
   db.pragma("foreign_keys = ON");
   for (const stmt of CREATE_TABLES) db.exec(stmt);
   for (const stmt of CREATE_INDEXES) db.exec(stmt);
+  for (const stmt of MIGRATIONS) {
+    try {
+      db.exec(stmt);
+    } catch {
+      // "duplicate column name" etc. — migration already applied.
+    }
+  }
   return db;
 }
 

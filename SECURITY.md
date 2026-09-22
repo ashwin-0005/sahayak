@@ -18,7 +18,13 @@ report it responsibly so we can fix it before it affects field workers.
 - The server recomputes clinical risk on every sync — client values are ignored.
 - The API never logs request bodies; error responses never include stack traces
   in production.
-- The offline PIN check uses a salted hash; the app locks on demand.
+- The offline PIN check uses a slow salted hash (PBKDF2-SHA256, 100k
+  iterations) with a 5-attempt device lockout.
+- Production refuses to boot with a default/weak `JWT_SECRET` or a wildcard
+  `CORS_ORIGIN`; login is additionally locked per account (5 wrong PINs).
+- Every accepted write lands in an append-only `audit_log`
+  (actor, action, record, timestamp); plausibility overrides are flagged.
+- Deploy restarts drain in-flight requests and close SQLite cleanly (SIGTERM).
 
 ## Known limitations (see audit report)
 

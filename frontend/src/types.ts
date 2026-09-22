@@ -42,6 +42,9 @@ export interface Visit {
   risk_level: RiskLevel;
   reason_codes: string[];
   advice_key: AdviceKey;
+  // 1 when the worker force-saved despite an implausible-reading warning.
+  // Audited server-side; null for visits created before this field existed.
+  override: 1 | 0 | null;
   created_at: string;
   updated_at: string;
 }

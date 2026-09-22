@@ -122,8 +122,7 @@ describe("sync", () => {
     expect(row.name).toBe("New Name");
   });
 
-  it("equal timestamps converge on the server row (documented tiebreak)", async () => {
-    const token = await tokenFor("w1", "1234");
+  it("equal timestamps converge on the server row (documented tiebreak)", async () => {    const token = await tokenFor("w1", "1234");
     const pid = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
     const ts = "2026-09-21T10:00:00.000Z";
     await request(app).post("/api/sync").set("Authorization", `Bearer ${token}`).send({
@@ -217,5 +216,48 @@ describe("sync", () => {
     };
     expect(row.risk_level).toBe("urgent");
     expect(row.reason_codes).toContain("BP_CRISIS");
+  });
+
+  it("rejects physically impossible readings per record", async () => {
+    const token = await tokenFor("w1", "1234");
+    const pid = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
+    const vid = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
+    const r = await request(app).post("/api/sync").set("Authorization", `Bearer ${token}`).send({
+      lastPulledAt: null,
+      patients: [patient(pid)],
+      visits: [visit(vid, pid, { systolic: 999 })],
+    });
+    expect(r.status).toBe(200);
+    const byId = Object.fromEntries((r.body.results as { id: string; status: string; code?: string }[]).map((x) => [x.id, x]));
+    expect(byId[pid].status).toBe("accepted");
+    expect(byId[vid].status).toBe("rejected");
+    expect(byId[vid].code).toBe("INVALID_RECORD");
+  });
+
+  it("persists the plausibility override flag and writes audit rows", async () => {
+    const token = await tokenFor("w1", "1234");
+    const pid = "ffffffff-ffff-4fff-8fff-ffffffffffff";
+    const vid = "00000000-0000-4000-8000-000000000000";
+    const r = await request(app).post("/api/sync").set("Authorization", `Bearer ${token}`).send({
+      lastPulledAt: null,
+      patients: [patient(pid)],
+      visits: [visit(vid, pid, { systolic: 190, diastolic: 110, override: 1 })],
+    });
+    expect(r.status).toBe(200);
+    const vrow = getDb().prepare("SELECT override, risk_level FROM visits WHERE id=?").get(vid) as {
+      override: number;
+      risk_level: string;
+    };
+    expect(vrow.override).toBe(1);
+    expect(vrow.risk_level).toBe("urgent");
+    const audits = getDb()
+      .prepare("SELECT action, table_name, actor_worker_id FROM audit_log WHERE record_id=? ORDER BY created_at")
+      .all(vid) as { action: string; table_name: string; actor_worker_id: string }[];
+    expect(audits.length).toBeGreaterThanOrEqual(1);
+    expect(audits[0]).toMatchObject({ action: "insert", table_name: "visits", actor_worker_id: "w1" });
+    const paudits = getDb()
+      .prepare("SELECT COUNT(*) c FROM audit_log WHERE record_id=? AND table_name='patients'")
+      .get(pid) as { c: number };
+    expect(paudits.c).toBeGreaterThanOrEqual(1);
   });
 });

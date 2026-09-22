@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { randomUUID } from "node:crypto";
 import { getDb } from "../db/client.js";
 import { authMiddleware, type AuthRequest } from "../middleware/auth.js";
 import { validateBody } from "../middleware/validate.js";
@@ -53,10 +54,27 @@ function toPatientRow(p: Record<string, unknown>, workerId: string): Record<stri
   };
 }
 
+// Append-only audit: every accepted write records actor + record + time.
+// Only called for rows that actually changed (not LWW no-ops).
+function audit(
+  db: ReturnType<typeof getDb>,
+  actor: string,
+  action: string,
+  table: string,
+  recordId: string,
+  detail: Record<string, unknown> | null,
+  now: string
+): void {
+  db.prepare(
+    "INSERT INTO audit_log (id, actor_worker_id, action, table_name, record_id, detail, created_at) VALUES (?,?,?,?,?,?,?)"
+  ).run(randomUUID(), actor, action, table, recordId, detail ? JSON.stringify(detail) : null, now);
+}
+// The client mirrors this (local wins only when strictly newer), so ties
+// converge deterministically instead of flapping between devices.
 // Tiebreak policy (documented): on equal updated_at the SERVER row wins.
 // The client mirrors this (local wins only when strictly newer), so ties
 // converge deterministically instead of flapping between devices.
-function applyPatient(db: ReturnType<typeof getDb>, p: Record<string, unknown>, workerId: string): void {
+function applyPatient(db: ReturnType<typeof getDb>, p: Record<string, unknown>, workerId: string, now: string): void {
   const row = toPatientRow(p, workerId);
   const existing = db.prepare("SELECT updated_at, worker_id FROM patients WHERE id = ?").get(row.id) as
     | { updated_at: string; worker_id: string }
@@ -73,6 +91,7 @@ function applyPatient(db: ReturnType<typeof getDb>, p: Record<string, unknown>, 
       row.language, row.consent_given, row.consent_at, row.next_visit_date,
       row.created_at, row.updated_at, row.deleted_at, row.id
     );
+    audit(db, workerId, "update", "patients", row.id as string, { updated_at: row.updated_at }, now);
   } else {
     db.prepare(
       `INSERT INTO patients (id, worker_id, name, age, sex, village, phone, "condition", language, consent_given, consent_at, next_visit_date, created_at, updated_at, deleted_at)
@@ -82,6 +101,7 @@ function applyPatient(db: ReturnType<typeof getDb>, p: Record<string, unknown>, 
       row.language, row.consent_given, row.consent_at, row.next_visit_date,
       row.created_at, row.updated_at, row.deleted_at
     );
+    audit(db, workerId, "insert", "patients", row.id as string, { updated_at: row.updated_at }, now);
   }
 }
 
@@ -125,6 +145,7 @@ function applyVisit(
   });
 
   const createdAt = (v.created_at as string | undefined) ?? incomingUpdated;
+  const override = v.override === 1 || v.override === true ? 1 : 0;
   const row = {
     id: vid,
     patient_id: pid,
@@ -141,29 +162,32 @@ function applyVisit(
     risk_level: risk.level,
     reason_codes: JSON.stringify(risk.reasonCodes),
     advice_key: risk.adviceKey,
+    override,
     created_at: createdAt,
     updated_at: incomingUpdated,
   };
 
   if (existing) {
     db.prepare(
-      `UPDATE visits SET patient_id=?, worker_id=?, visited_at=?, systolic=?, diastolic=?, sugar_mg_dl=?, sugar_type=?, medicine_taken=?, missed_doses=?, symptoms=?, notes=?, risk_level=?, reason_codes=?, advice_key=?, created_at=?, updated_at=? WHERE id=?`
+      `UPDATE visits SET patient_id=?, worker_id=?, visited_at=?, systolic=?, diastolic=?, sugar_mg_dl=?, sugar_type=?, medicine_taken=?, missed_doses=?, symptoms=?, notes=?, risk_level=?, reason_codes=?, advice_key=?, override=?, created_at=?, updated_at=? WHERE id=?`
     ).run(
       row.patient_id, row.worker_id, row.visited_at, row.systolic, row.diastolic,
       row.sugar_mg_dl, row.sugar_type, row.medicine_taken, row.missed_doses,
       row.symptoms, row.notes, row.risk_level, row.reason_codes, row.advice_key,
-      row.created_at, row.updated_at, row.id
+      row.override, row.created_at, row.updated_at, row.id
     );
+    audit(db, workerId, "update", "visits", vid, { risk_level: risk.level, override }, now);
   } else {
     db.prepare(
-      `INSERT INTO visits (id, patient_id, worker_id, visited_at, systolic, diastolic, sugar_mg_dl, sugar_type, medicine_taken, missed_doses, symptoms, notes, risk_level, reason_codes, advice_key, created_at, updated_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+      `INSERT INTO visits (id, patient_id, worker_id, visited_at, systolic, diastolic, sugar_mg_dl, sugar_type, medicine_taken, missed_doses, symptoms, notes, risk_level, reason_codes, advice_key, override, created_at, updated_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
     ).run(
       row.id, row.patient_id, row.worker_id, row.visited_at, row.systolic, row.diastolic,
       row.sugar_mg_dl, row.sugar_type, row.medicine_taken, row.missed_doses,
       row.symptoms, row.notes, row.risk_level, row.reason_codes, row.advice_key,
-      row.created_at, row.updated_at
+      row.override, row.created_at, row.updated_at
     );
+    audit(db, workerId, "insert", "visits", vid, { risk_level: risk.level, override }, now);
   }
 
   // Update patient's next visit date from this visit
@@ -214,7 +238,7 @@ router.post("/", validateBody(syncSchema), (req, res) => {
       continue;
     }
     try {
-      db.transaction(() => applyPatient(db, { ...p, consent_given: 1 }, workerId))();
+      db.transaction(() => applyPatient(db, { ...p, consent_given: 1 }, workerId, now))();
       results.push({ table: "patients", id, status: "accepted" });
     } catch (e: unknown) {
       const err = e as { status?: number; code?: string; message?: string };

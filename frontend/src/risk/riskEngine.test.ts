@@ -37,7 +37,16 @@ const CASES: RiskInput[] = [
   { condition: "hypertension", age: 40, systolic: 200, diastolic: 100, medicineTaken: true, symptoms: ["chest_pain", "fainting"] },
   { condition: "diabetes", age: 45, sugarMgDl: 250, sugarType: "random", symptoms: ["confusion"], medicineTaken: false },
   { condition: "pregnancy", age: 22, systolic: 100, diastolic: 70, symptoms: ["bleeding", "reduced_fetal_movement"] },
-  { condition: "hypertension", age: 30, systolic: 0, diastolic: 0 }
+  { condition: "hypertension", age: 30, systolic: 0, diastolic: 0 },
+  // Edge interactions the original 31 cases never hit:
+  { condition: "hypertension", age: 50, systolic: 150, diastolic: 55 }, // BP_HIGH + BP_LOW simultaneously
+  { condition: "pregnancy", age: 26, systolic: 85, diastolic: 55 }, // pregnancy low-BP branch
+  { condition: "diabetes", age: 50, sugarMgDl: 250, sugarType: null }, // unknown-type high branch
+  { condition: "tb", age: 34, missedDoses: 3 }, // exact TB-urgent boundary
+  { condition: "tb", age: 34, missedDoses: -1 }, // negative: must not escalate
+  { condition: "hypertension", age: 50, systolic: Number.NaN, diastolic: 80 }, // NaN degrades to missing
+  { condition: "diabetes", age: 50, sugarMgDl: 126, sugarType: "fasting" }, // exact fasting boundary
+  { condition: "hypertension", age: 50, systolic: 139, diastolic: 89 } // just below clinic
 ];
 
 function sortCodes(codes: string[]): string[] {

@@ -97,8 +97,25 @@ export default function VisitNewPage() {
   const satisfies = () => {
     if ((condition === "hypertension" || condition === "pregnancy") && (systolic === "" || diastolic === "")) return false;
     if (condition === "diabetes" && sugar === "") return false;
+    // TB: refuse a zero-data visit (missed=0, no medicine answer, no
+    // symptoms, no notes would otherwise save as a content-free ALL_OK).
+    if (
+      condition === "tb" &&
+      missedDoses === 0 &&
+      medicineTaken === null &&
+      symptoms.length === 0 &&
+      notes.trim() === ""
+    )
+      return false;
     return true;
   };
+
+  const tbEmpty =
+    condition === "tb" &&
+    missedDoses === 0 &&
+    medicineTaken === null &&
+    symptoms.length === 0 &&
+    notes.trim() === "";
 
   const doSave = async (force: boolean) => {
     if (!patient) return;
@@ -134,6 +151,8 @@ export default function VisitNewPage() {
       risk_level: risk.level,
       reason_codes: risk.reasonCodes,
       advice_key: risk.adviceKey,
+      // force=true only via the "save anyway" path — records the override.
+      override: force ? 1 : 0,
       created_at: visitedAt,
       updated_at: visitedAt
     };
@@ -329,6 +348,11 @@ export default function VisitNewPage() {
         <BigButton disabled={!satisfies()} onClick={() => void doSave(false)}>
           {t("visit.save")}
         </BigButton>
+        {tbEmpty ? (
+          <p role="status" className="text-base text-neem-dark">
+            {t("visit.tbRequired")}
+          </p>
+        ) : null}
       </div>
 
       {showPlausibility && (

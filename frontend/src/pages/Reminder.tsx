@@ -158,6 +158,8 @@ export default function ReminderPage() {
         </BigButton>
       </div>
 
+      <p className="mt-4 text-base text-neem-dark">{t("reminder.shareNotice")}</p>
+
       <p className="mt-4 text-base text-neem-dark">{t("settings.disclaimer")}</p>
 
       {toast ? <Toast message={t("reminder.copied")} onDone={() => setToast(false)} /> : null}

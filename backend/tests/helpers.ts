@@ -25,12 +25,3 @@ export function seedWorker(id: string, pin: string, name = "Test Worker", villag
     "INSERT OR REPLACE INTO workers (id, name, village, pin_hash, created_at) VALUES (?,?,?,?,?)"
   ).run(id, name, village, hash, new Date().toISOString());
 }
-
-export function loginToken(app: unknown, workerId: string, pin: string): Promise<string> {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  return (import("supertest") as Promise<typeof import("supertest")>).then(({ default: request }) =>
-    (request(app as never).post("/api/auth/login").send({ workerId, pin }) as unknown as Promise<{ body: { token: string } }>).then(
-      (r) => r.body.token
-    )
-  );
-}

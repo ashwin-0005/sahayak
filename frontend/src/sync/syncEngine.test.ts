@@ -115,6 +115,7 @@ describe("syncEngine: push, apply, and clear on success", () => {
       risk_level: "urgent",
       reason_codes: '["BP_CRISIS"]',
       advice_key: "refer_urgent",
+      override: 0,
       created_at: "2099-01-01T08:00:00.000Z",
       updated_at: "2099-01-01T08:00:00.000Z"
     } as unknown as Visit;

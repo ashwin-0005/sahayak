@@ -147,8 +147,8 @@ function main(): void {
   const nV = (db.prepare("SELECT COUNT(*) c FROM visits").get() as { c: number }).c;
   // eslint-disable-next-line no-console
   console.log(`Seeded ${nP} patients, ${nV} visits.`);
-  // eslint-disable-next-line no-console
-  console.log("Demo credentials:\n  workerId=asha001 pin=1234 (Meera Yadav, Sanwer)\n  workerId=asha002 pin=5678 (Sunita Patel, Depalpur)");
+  // NOTE: demo credentials live in README + the landing page by design, but
+  // never print secrets to stdout — CI/deploy logs are retained and shared.
 }
 
 main();
