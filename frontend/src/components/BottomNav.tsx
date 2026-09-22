@@ -3,7 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { Home, Settings, SquarePlus, Users } from "lucide-react";
 
 const NAV_ITEMS = [
-  { to: "/", key: "home", icon: Home, end: true },
+  { to: "/home", key: "home", icon: Home, end: true },
   { to: "/patients", key: "patients", icon: Users, end: false },
   { to: "/patients/new", key: "add", icon: SquarePlus, end: false },
   { to: "/settings", key: "settings", icon: Settings, end: false }

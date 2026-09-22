@@ -71,7 +71,7 @@ export default function RiskResultPage() {
           icon={HeartPulse}
           title={t("risk.noResult")}
           actionLabel={t("common.done")}
-          onAction={() => navigate("/")}
+          onAction={() => navigate("/home")}
         />
       </PageShell>
     );
@@ -129,7 +129,7 @@ export default function RiskResultPage() {
         <BigButton icon={Bell} onClick={() => navigate(`/reminders/${patient.id}`)}>
           {t("risk.sendReminder")}
         </BigButton>
-        <BigButton variant="secondary" onClick={() => navigate("/")}>
+        <BigButton variant="secondary" onClick={() => navigate("/home")}>
           {t("risk.done")}
         </BigButton>
       </div>
