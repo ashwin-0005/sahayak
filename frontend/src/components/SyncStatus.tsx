@@ -2,10 +2,12 @@ import { useTranslation } from "react-i18next";
 import { CloudOff, RefreshCw, AlertTriangle, Check, Clock } from "lucide-react";
 import { useSync } from "../sync/useSync";
 import { formatTime } from "../lib/dates";
+import { useSlowNotice } from "../lib/useSlow";
 
 export function SyncStatus({ onSynced }: { onSynced?: () => void }) {
   const { t, i18n } = useTranslation();
   const sync = useSync();
+  const slowSync = useSlowNotice(sync.status === "syncing");
 
   const pendingLabel = sync.pending === 1 ? t("status.pendingOne") : t("status.pending", { count: sync.pending });
 
@@ -45,8 +47,13 @@ export function SyncStatus({ onSynced }: { onSynced?: () => void }) {
       <div className="flex items-center gap-2">
         {chip()}
         {sync.pending > 0 && (
-          <span className="tag bg-clinic text-white">{pendingLabel}</span>
+          <span className="tag bg-clinic text-ink">{pendingLabel}</span>
         )}
+        {sync.status === "syncing" && slowSync ? (
+          <span role="status" className="text-base text-neem-dark">
+            {t("status.slowSync")}
+          </span>
+        ) : null}
         <span className="flex items-center gap-1 text-base text-neem-dark">
           <Clock className="size-4" aria-hidden="true" />
           {sync.lastSyncedAt ? t("status.lastSync", { time: formatTime(sync.lastSyncedAt, i18n.language) }) : t("status.never")}

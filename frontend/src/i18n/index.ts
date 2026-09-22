@@ -37,9 +37,14 @@ i18n
     interpolation: { escapeValue: false }
   });
 
-// Keep <html lang> in sync with the active language for accessibility.
-i18n.on("languageChanged", (lng) => {
+// Keep <html lang> and the PWA description in sync with the active language.
+function syncDocumentLang(lng: string): void {
   document.documentElement.lang = lng;
-});
+  const meta = document.querySelector('meta[name="description"]');
+  if (meta) meta.setAttribute("content", i18n.t("app.description", { lng }));
+}
+
+i18n.on("languageChanged", syncDocumentLang);
+syncDocumentLang(i18n.language);
 
 export default i18n;

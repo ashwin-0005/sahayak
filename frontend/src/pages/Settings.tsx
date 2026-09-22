@@ -17,10 +17,14 @@ export default function SettingsPage() {
   const [patientCount, setPatientCount] = useState(0);
   const [confirming, setConfirming] = useState(false);
   const [installEvt, setInstallEvt] = useState<Event | null>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    void getSession().then(setSession);
-    void getAllPatients().then((ps) => setPatientCount(ps.length));
+    void (async () => {
+      setSession(await getSession());
+      setPatientCount((await getAllPatients()).length);
+      setReady(true);
+    })();
     const onInstall = (e: Event) => {
       e.preventDefault();
       setInstallEvt(e);
@@ -41,6 +45,16 @@ export default function SettingsPage() {
     if (!installEvt) return;
     (installEvt as unknown as { prompt: () => void }).prompt();
   };
+
+  if (!ready) {
+    return (
+      <PageShell>
+        <p role="status" className="mt-10 text-center text-body text-neem-dark">
+          {t("common.loading")}
+        </p>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell>
@@ -75,7 +89,7 @@ export default function SettingsPage() {
       <div className="mt-4 card">
         <p className="text-body font-bold text-ink">{t("settings.about")}</p>
         <p className="mt-1 text-base text-neem-dark">
-          {t("app.name")} · {patientCount} {t("patients.title").toLowerCase()}
+          {t("app.name")} · {t("settings.patientCount", { count: patientCount })}
         </p>
         <p className="mt-3 flex items-start gap-2 text-base text-neem-dark">
           <ShieldCheck className="mt-0.5 size-5 shrink-0 text-neem" aria-hidden="true" />

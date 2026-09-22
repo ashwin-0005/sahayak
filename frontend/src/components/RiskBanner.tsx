@@ -15,7 +15,10 @@ export function RiskBanner({ level, reasonKeys = [], className = "" }: RiskBanne
   const Icon = meta.icon;
   return (
     <div
-      className={`${className} flex items-center gap-3 rounded-card px-4 py-3 text-white`}
+      className={`${className} flex items-center gap-3 rounded-card px-4 py-3 ${
+        // Ink text on clinic orange: white-on-orange fails contrast (2.69:1).
+        level === "clinic" ? "text-ink" : "text-white"
+      }`}
       style={{ backgroundColor: meta.bg }}
       role="status"
     >

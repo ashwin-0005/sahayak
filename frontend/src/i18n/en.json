@@ -1,7 +1,8 @@
 {
   "app": {
     "name": "Sahayak",
-    "tagline": "Follow-up care, offline"
+    "tagline": "Follow-up care, offline",
+    "description": "Follow-up care for community health workers, even offline"
   },
   "nav": {
     "home": "Today",
@@ -32,6 +33,8 @@
     "error": "Incorrect worker ID or PIN.",
     "errorNetwork": "No connection. Checking saved PIN...",
     "unlockOffline": "You are offline. Enter your PIN to unlock.",
+    "waking": "Waking up the server — this can take up to a minute on first use.",
+    "timeoutError": "The server is taking too long. Please try again.",
     "languageLabel": "App language"
   },
   "home": {
@@ -55,6 +58,7 @@
     "pendingOne": "1 change waiting",
     "lastSync": "Last synced {{time}}",
     "never": "Not synced yet",
+    "slowSync": "Taking longer than usual — the server may be waking up.",
     "syncNow": "Sync now"
   },
   "patients": {
@@ -141,7 +145,8 @@
     "nextVisitDays": "in {{days}} days",
     "sendReminder": "Send reminder",
     "done": "Done",
-    "summary": "Risk"
+    "summary": "Risk",
+    "noResult": "No recent visit result"
   },
   "reason": {
     "BP_CRISIS": "Blood pressure is dangerously high",
@@ -196,6 +201,8 @@
     "lastSync": "Last synced",
     "pending": "{{count}} changes waiting to sync",
     "pendingOne": "1 change waiting to sync",
+    "patientCount_one": "{{count}} patient",
+    "patientCount_other": "{{count}} patients",
     "lock": "Lock app",
     "logOut": "Log out of this device",
     "reset": "Reset demo data",
@@ -213,5 +220,12 @@
     "diabetes": "Diabetes",
     "tb": "TB",
     "pregnancy": "Pregnancy"
+  },
+  "a11y": {
+    "navPrimary": "Primary",
+    "summary": "Summary",
+    "decrease": "Decrease",
+    "increase": "Increase",
+    "delete": "Delete"
   }
 }

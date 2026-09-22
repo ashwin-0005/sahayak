@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 interface NumberPadProps {
   value: string;
   onChange: (v: string) => void;
@@ -7,6 +9,7 @@ interface NumberPadProps {
 
 // On-screen numeric entry for readings and PINs. Big keys, works with one hand.
 export function NumberPad({ value, onChange, maxLength = 4, label }: NumberPadProps) {
+  const { t } = useTranslation();
   const press = (k: string) => {
     if (value.length >= maxLength) return;
     onChange(value + k);
@@ -35,7 +38,7 @@ export function NumberPad({ value, onChange, maxLength = 4, label }: NumberPadPr
             key={k}
             type="button"
             className="num-key"
-            aria-label={k === "back" ? "Delete" : k}
+            aria-label={k === "back" ? t("a11y.delete") : k}
             onClick={() => (k === "back" ? back() : press(k))}
           >
             {k === "back" ? "⌫" : k}

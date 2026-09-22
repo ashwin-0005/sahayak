@@ -18,6 +18,7 @@ export default function PatientsPage() {
   const [visits, setVisits] = useState<Visit[]>([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Condition | "all">("all");
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     void (async () => {
@@ -26,6 +27,7 @@ export default function PatientsPage() {
       const vs: Visit[] = [];
       for (const p of ps) vs.push(...(await getVisitsForPatient(p.id)));
       setVisits(vs);
+      setLoaded(true);
     })();
   }, []);
 
@@ -41,6 +43,16 @@ export default function PatientsPage() {
       )
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [patients, search, filter]);
+
+  if (!loaded) {
+    return (
+      <PageShell>
+        <p role="status" className="mt-10 text-center text-body text-neem-dark">
+          {t("common.loading")}
+        </p>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell>

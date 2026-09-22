@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
-import { Copy, MessageCircle, Smartphone, X } from "lucide-react";
+import { Copy, FolderSearch, MessageCircle, Smartphone, X } from "lucide-react";
 import { PageShell } from "../components/PageShell";
 import { BigButton } from "../components/BigButton";
+import { EmptyState } from "../components/EmptyState";
+import { Toast } from "../components/Toast";
 import { getPatient, getVisitsForPatient } from "../db/repo";
 import { formatDate } from "../lib/dates";
 import { lastRisk } from "../lib/records";
@@ -23,7 +25,8 @@ export default function ReminderPage() {
   const [visits, setVisits] = useState<Visit[]>([]);
   const [lang, setLang] = useState<Language>("hi");
   const [message, setMessage] = useState("");
-  const [copied, setCopied] = useState(false);
+  const [toast, setToast] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     void (async () => {
@@ -33,6 +36,7 @@ export default function ReminderPage() {
         setLang(p.language);
         setVisits(await getVisitsForPatient(p.id));
       }
+      setLoaded(true);
     })();
   }, [patientId]);
 
@@ -55,17 +59,32 @@ export default function ReminderPage() {
     setMessage(built);
   }, [built]);
 
-  if (!patient)
+  if (!loaded) {
     return (
       <PageShell>
-        <p>{t("patients.emptyTitle")}</p>
+        <p role="status" className="mt-10 text-center text-body text-neem-dark">
+          {t("common.loading")}
+        </p>
       </PageShell>
     );
+  }
+
+  if (!patient) {
+    return (
+      <PageShell>
+        <EmptyState
+          icon={FolderSearch}
+          title={t("patients.emptyTitle")}
+          actionLabel={t("common.back")}
+          onAction={() => navigate(-1)}
+        />
+      </PageShell>
+    );
+  }
 
   const copy = async () => {
     await navigator.clipboard.writeText(message);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setToast(true);
   };
 
   const shareWa = () =>
@@ -124,7 +143,7 @@ export default function ReminderPage() {
 
       <div className="mt-4 flex flex-col gap-3">
         <BigButton variant="secondary" icon={Copy} onClick={() => void copy()}>
-          {copied ? t("reminder.copied") : t("reminder.copy")}
+          {t("reminder.copy")}
         </BigButton>
         <BigButton icon={MessageCircle} disabled={!patient.phone} onClick={shareWa}>
           {t("reminder.sendWhatsApp")}
@@ -133,6 +152,8 @@ export default function ReminderPage() {
           {t("reminder.sendSms")}
         </BigButton>
       </div>
+
+      {toast ? <Toast message={t("reminder.copied")} onDone={() => setToast(false)} /> : null}
     </PageShell>
   );
 }

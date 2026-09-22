@@ -1,12 +1,14 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Bell, Volume2 } from "lucide-react";
+import { Bell, HeartPulse, Volume2 } from "lucide-react";
 import { PageShell } from "../components/PageShell";
 import { BigButton } from "../components/BigButton";
+import { EmptyState } from "../components/EmptyState";
 import { RISK_META } from "../lib/riskMeta";
 import { formatDate } from "../lib/dates";
 import { hasVoiceFor, speak } from "../voice/speak";
+import { getMeta } from "../db/repo";
 import type { Patient, Visit } from "../types";
 
 interface ResultState {
@@ -14,15 +16,33 @@ interface ResultState {
   visit: Visit;
 }
 
+const ADVICE_KEY = { refer_urgent: "instructionUrgent", visit_clinic_week: "instructionClinic", continue_home_care: "instructionHome" } as const;
+
+const LAST_RESULT_KEY = "lastRiskResult";
+
 export default function RiskResultPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const state = location.state as ResultState | null;
+  const navState = location.state as ResultState | null;
+  const [stored, setStored] = useState<ResultState | null>(null);
+  const [checking, setChecking] = useState(!navState);
+
+  // Survive a refresh: VisitNew persists every result; fall back to it when
+  // there is no navigation state (refresh, shared link, back-button).
+  useEffect(() => {
+    if (navState) return;
+    void getMeta(LAST_RESULT_KEY).then((v) => {
+      setStored((v as ResultState | null) ?? null);
+      setChecking(false);
+    });
+  }, [navState]);
+
+  const data = navState ?? stored;
 
   useEffect(() => {
-    if (!state) return;
-    const { patient, visit } = state;
+    if (!data) return;
+    const { patient, visit } = data;
     if (visit.risk_level === "urgent" || visit.risk_level === "clinic") {
       const lng = patient.language;
       const summary = `${t(`risk.${visit.risk_level}`, { lng, defaultValue: "Risk" })} — ${t(
@@ -32,20 +52,32 @@ export default function RiskResultPage() {
       speak(summary, lng);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [Boolean(state)]);
+  }, [Boolean(data)]);
 
-  if (!state) {
+  if (checking) {
     return (
-      <PageShell>
-        <p className="mt-10 text-center text-body text-neem-dark">{t("risk.summary")}</p>
-        <BigButton className="mt-4" onClick={() => navigate("/")}>
-          {t("common.done")}
-        </BigButton>
+      <PageShell noNav>
+        <p role="status" className="mt-10 text-center text-body text-neem-dark">
+          {t("common.loading")}
+        </p>
       </PageShell>
     );
   }
 
-  const { patient, visit } = state;
+  if (!data) {
+    return (
+      <PageShell noNav>
+        <EmptyState
+          icon={HeartPulse}
+          title={t("risk.noResult")}
+          actionLabel={t("common.done")}
+          onAction={() => navigate("/")}
+        />
+      </PageShell>
+    );
+  }
+
+  const { patient, visit } = data;
   const meta = RISK_META[visit.risk_level];
   const Icon = meta.icon;
   const lng = patient.language;
@@ -58,8 +90,6 @@ export default function RiskResultPage() {
     const summary = [...reads, `${t(`risk.${visit.risk_level}`, { lng })}. ${t(`risk.${ADVICE_KEY[visit.advice_key]}`, { lng })}`].join(". ");
     speak(summary, lng);
   };
-
-  const ADVICE_KEY = { refer_urgent: "instructionUrgent", visit_clinic_week: "instructionClinic", continue_home_care: "instructionHome" } as const;
 
   return (
     <PageShell noNav>

@@ -26,8 +26,27 @@ export class ApiErrorClass extends Error {
   }
 }
 
+// Free-tier hosts can take ~50s to wake from sleep; bound every request so
+// the UI can report a timeout instead of hanging forever.
+const REQUEST_TIMEOUT_MS = 90_000;
+
+async function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
+  const ctrl = new AbortController();
+  const id = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...init, signal: ctrl.signal });
+  } catch (e) {
+    if (ctrl.signal.aborted) {
+      throw new ApiErrorClass("TIMEOUT", "Request timed out");
+    }
+    throw e;
+  } finally {
+    clearTimeout(id);
+  }
+}
+
 export async function postLogin(workerId: string, pin: string): Promise<{ token: string; worker: { id: string; name: string; village: string } }> {
-  const res = await fetch(`${API_URL}/api/auth/login`, {
+  const res = await fetchWithTimeout(`${API_URL}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ workerId, pin })
@@ -39,7 +58,7 @@ export async function postSync(
   token: string,
   payload: { lastPulledAt: string | null; patients: unknown[]; visits: unknown[] }
 ): Promise<{ patients: Record<string, unknown>[]; visits: Record<string, unknown>[]; serverTime: string }> {
-  const res = await fetch(`${API_URL}/api/sync`, {
+  const res = await fetchWithTimeout(`${API_URL}/api/sync`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify(payload)

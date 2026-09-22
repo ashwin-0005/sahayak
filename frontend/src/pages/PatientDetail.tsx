@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Bell, X, Plus, CalendarClock } from "lucide-react";
 import {
   CartesianGrid,
+  Legend,
   Line,
   LineChart,
   ReferenceLine,
@@ -67,7 +68,14 @@ export default function PatientDetailPage() {
     [visits, i18n.language]
   );
 
-  if (loading) return <PageShell />;
+  if (loading)
+    return (
+      <PageShell>
+        <p role="status" className="mt-10 text-center text-body text-neem-dark">
+          {t("common.loading")}
+        </p>
+      </PageShell>
+    );
   if (!patient) return <PageShell><EmptyState icon={X} title={t("patients.emptyTitle")} /></PageShell>;
 
   const last = lastVisit(visits, patient.id);
@@ -120,10 +128,11 @@ export default function PatientDetailPage() {
                 <XAxis dataKey="label" tick={{ fontSize: 12 }} />
                 <YAxis domain={[40, 220]} tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <ReferenceLine y={140} stroke="#E08A00" strokeDasharray="4 4" />
-                <ReferenceLine y={90} stroke="#E08A00" strokeDasharray="4 4" />
-                <ReferenceLine y={180} stroke="#C62828" strokeDasharray="4 4" />
-                <ReferenceLine y={120} stroke="#C62828" strokeDasharray="4 4" />
+                <Legend />
+                <ReferenceLine y={140} label="140" stroke="#E08A00" strokeDasharray="4 4" />
+                <ReferenceLine y={90} label="90" stroke="#E08A00" strokeDasharray="4 4" />
+                <ReferenceLine y={180} label="180" stroke="#C62828" strokeDasharray="4 4" />
+                <ReferenceLine y={120} label="120" stroke="#C62828" strokeDasharray="4 4" />
                 <Line type="monotone" dataKey="sys" name={`${t("detail.bp")} sys`} stroke="#1D6A50" strokeWidth={3} dot={{ r: 3 }} />
                 <Line type="monotone" dataKey="dia" name={`${t("detail.bp")} dia`} stroke="#10231C" strokeWidth={3} dot={{ r: 3 }} />
               </LineChart>
@@ -142,8 +151,9 @@ export default function PatientDetailPage() {
                 <XAxis dataKey="label" tick={{ fontSize: 12 }} />
                 <YAxis domain={[40, 400]} tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <ReferenceLine y={126} stroke="#E08A00" strokeDasharray="4 4" />
-                <ReferenceLine y={200} stroke="#E08A00" strokeDasharray="4 4" />
+                <Legend />
+                <ReferenceLine y={126} label="126" stroke="#E08A00" strokeDasharray="4 4" />
+                <ReferenceLine y={200} label="200" stroke="#E08A00" strokeDasharray="4 4" />
                 <Line type="monotone" dataKey="sugar" name={t("detail.sugar")} stroke="#1D6A50" strokeWidth={3} dot={{ r: 3 }} />
               </LineChart>
             </ResponsiveContainer>
@@ -169,8 +179,12 @@ export default function PatientDetailPage() {
                       </span>
                     </p>
                     <span
-                      className={`tag text-white ${
-                        v.risk_level === "urgent" ? "bg-urgent" : v.risk_level === "clinic" ? "bg-clinic" : "bg-home"
+                      className={`tag ${
+                        v.risk_level === "urgent"
+                          ? "bg-urgent text-white"
+                          : v.risk_level === "clinic"
+                            ? "bg-clinic text-ink"
+                            : "bg-home text-white"
                       }`}
                     >
                       {t(`risk.${v.risk_level}`)}

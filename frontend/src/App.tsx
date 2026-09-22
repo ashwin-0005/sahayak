@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { getSession, isLocked } from "./auth/auth";
 import { initSyncEngine } from "./sync/syncEngine";
@@ -6,11 +7,21 @@ import LoginPage from "./pages/Login";
 import HomePage from "./pages/Home";
 import PatientsPage from "./pages/Patients";
 import PatientNewPage from "./pages/PatientNew";
-import PatientDetailPage from "./pages/PatientDetail";
+// recharts is heavy and used on one screen only — lazy so it stays out of the main chunk.
+const PatientDetailPage = lazy(() => import("./pages/PatientDetail"));
 import VisitNewPage from "./pages/VisitNew";
 import RiskResultPage from "./pages/RiskResult";
 import ReminderPage from "./pages/Reminder";
 import SettingsPage from "./pages/Settings";
+
+function RouteFallback() {
+  const { t } = useTranslation();
+  return (
+    <p role="status" className="mt-10 text-center text-body text-neem-dark">
+      {t("common.loading")}
+    </p>
+  );
+}
 
 function RequireAuth({ children }: { children: JSX.Element }) {
   const [ready, setReady] = useState(false);
@@ -29,7 +40,7 @@ function RequireAuth({ children }: { children: JSX.Element }) {
   if (!ready) {
     return (
       <div className="flex min-h-dvh items-center justify-center">
-        <p className="text-body text-neem-dark">…</p>
+        <RouteFallback />
       </div>
     );
   }
@@ -73,7 +84,9 @@ export default function App() {
         path="/patients/:id"
         element={
           <RequireAuth>
-            <PatientDetailPage />
+            <Suspense fallback={<RouteFallback />}>
+              <PatientDetailPage />
+            </Suspense>
           </RequireAuth>
         }
       />

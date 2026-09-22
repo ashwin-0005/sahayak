@@ -19,7 +19,7 @@ export function BottomNav() {
 
   return (
     <nav
-      aria-label="Primary"
+      aria-label={t("a11y.navPrimary")}
       className="fixed inset-x-0 bottom-0 z-40 mx-auto h-16 max-w-[480px] border-t border-mist bg-paper"
     >
       <ul className="grid h-full grid-cols-4">

@@ -5,7 +5,7 @@ import { Mic, MicOff, X } from "lucide-react";
 import { PageShell } from "../components/PageShell";
 import { BigButton } from "../components/BigButton";
 import { NumberPad } from "../components/NumberPad";
-import { getPatient, recordVisit } from "../db/repo";
+import { getPatient, recordVisit, setMeta } from "../db/repo";
 import { newId } from "../lib/ids";
 import { nextVisitDate } from "../lib/dates";
 import { assessRisk } from "../risk/riskEngine";
@@ -136,6 +136,8 @@ export default function VisitNewPage() {
     };
     const nextDate = nextVisitDate(visitedAt, risk.nextVisitInDays);
     const { patient: updated, visit } = await recordVisit(patient, visitInput, nextDate);
+    // Persist so /risk/result survives a refresh (navigation state does not).
+    await setMeta("lastRiskResult", { patient: updated, visit });
     navigate("/risk/result", { state: { patient: updated, visit } });
   };
 
@@ -162,7 +164,14 @@ export default function VisitNewPage() {
     rec.start();
   };
 
-  if (loading) return <PageShell />;
+  if (loading)
+    return (
+      <PageShell>
+        <p role="status" className="mt-10 text-center text-body text-neem-dark">
+          {t("common.loading")}
+        </p>
+      </PageShell>
+    );
   if (!patient)
     return (
       <PageShell>
@@ -222,7 +231,7 @@ export default function VisitNewPage() {
               <button
                 type="button"
                 className="num-key"
-                aria-label="minus"
+                aria-label={t("a11y.decrease")}
                 onClick={() => setMissedDoses((v) => Math.max(0, v - 1))}
               >
                 −
@@ -231,7 +240,7 @@ export default function VisitNewPage() {
               <button
                 type="button"
                 className="num-key"
-                aria-label="plus"
+                aria-label={t("a11y.increase")}
                 onClick={() => setMissedDoses((v) => Math.min(7, v + 1))}
               >
                 +

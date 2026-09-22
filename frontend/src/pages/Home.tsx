@@ -19,6 +19,7 @@ export default function HomePage() {
   const [session, setSession] = useState<Session | null>(null);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [visits, setVisits] = useState<Visit[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     void getSession().then(setSession);
@@ -33,6 +34,7 @@ export default function HomePage() {
       vs.push(...(await getVisitsForPatient(p.id)));
     }
     setVisits(vs);
+    setLoaded(true);
   }
 
   const due = useMemo(() => dueNow(patients, visits), [patients, visits]);
@@ -50,6 +52,16 @@ export default function HomePage() {
     { label: t("home.visitsTodayCount"), value: counts.today, icon: HeartPulse, color: "#1D6A50" }
   ];
 
+  if (!loaded) {
+    return (
+      <PageShell>
+        <p role="status" className="mt-10 text-center text-body text-neem-dark">
+          {t("common.loading")}
+        </p>
+      </PageShell>
+    );
+  }
+
   return (
     <PageShell>
       <header className="flex items-center justify-between">
@@ -66,7 +78,7 @@ export default function HomePage() {
         <SyncStatus onSynced={() => void load()} />
       </div>
 
-      <section className="mt-5 grid grid-cols-3 gap-3" aria-label="Summary">
+      <section className="mt-5 grid grid-cols-3 gap-3" aria-label={t("a11y.summary")}>
         {summary.map(({ label, value, icon: Icon, color }) => (
           <div key={label} className="card flex flex-col items-center gap-1 text-center">
             <Icon className="size-6" style={{ color }} aria-hidden="true" />

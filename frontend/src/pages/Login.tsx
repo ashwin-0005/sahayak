@@ -7,6 +7,7 @@ import { BigButton } from "../components/BigButton";
 import { setLanguage, type UILang } from "../i18n";
 import { syncNow } from "../sync/syncEngine";
 import { ApiErrorClass } from "../lib/api";
+import { useSlowNotice } from "../lib/useSlow";
 
 export default function LoginPage() {
   const { t, i18n } = useTranslation();
@@ -18,6 +19,7 @@ export default function LoginPage() {
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const slowLogin = useSlowNotice(busy);
 
   const online = navigator.onLine;
 
@@ -36,8 +38,8 @@ export default function LoginPage() {
       void syncNow();
       navigate(from, { replace: true });
     } catch (e) {
-      if (e instanceof ApiErrorClass && e.code === "NO_SESSION" && !online) {
-        setError(t("login.error"));
+      if (e instanceof ApiErrorClass && e.code === "TIMEOUT") {
+        setError(t("login.timeoutError"));
       } else {
         setError(t("login.error"));
       }
@@ -50,7 +52,7 @@ export default function LoginPage() {
     <div className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col px-5 pb-10 pt-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-page font-extrabold text-ink">सहाय्यक</h1>
+          <h1 className="text-page font-extrabold text-ink">{t("app.name")}</h1>
           <p className="text-body text-neem-dark">{t("app.tagline")}</p>
         </div>
         <div className="flex gap-1" role="group" aria-label={t("login.languageLabel")}>
@@ -104,6 +106,11 @@ export default function LoginPage() {
         >
           {busy ? t("common.loading") : t("login.submit")}
         </BigButton>
+        {busy && slowLogin ? (
+          <p role="status" className="mt-3 text-body text-neem-dark">
+            {t("login.waking")}
+          </p>
+        ) : null}
       </div>
     </div>
   );
