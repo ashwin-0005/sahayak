@@ -71,7 +71,8 @@
     "conditionFilter": "बीमारी चुनें",
     "allConditions": "सभी",
     "emptyTitle": "कोई मरीज़ नहीं मिला",
-    "emptyAction": "पहला मरीज़ दर्ज करें"
+    "emptyAction": "पहला मरीज़ दर्ज करें",
+    "showingFirst": "कुल {{total}} में से पहले {{count}} दिखाए जा रहे हैं — खोज सुधारें।"
   },
   "patientNew": {
     "title": "नया मरीज़",
@@ -104,6 +105,7 @@
     "sugarTrendTitle": "शर्करा का रुझान",
     "noTrend": "अभी कोई हालिया माप नहीं है",
     "visitsTitle": "मुलाकातें",
+    "showingRecent": "कुल {{total}} में से पिछली {{count}} मुलाकातें दिखाई जा रही हैं।",
     "noVisits": "अभी कोई मुलाकात दर्ज नहीं",
     "noVisitsBody": "पहली मुलाकात दर्ज करके ट्रैकिंग शुरू करें",
     "conditionLabel": "बीमारी",

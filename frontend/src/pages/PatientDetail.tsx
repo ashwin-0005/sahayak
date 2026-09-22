@@ -163,6 +163,11 @@ export default function PatientDetailPage() {
 
       <section className="mt-6">
         <h2 className="text-section font-extrabold">{t("detail.visitsTitle")}</h2>
+        {visits.length > 50 ? (
+          <p role="status" className="mt-1 text-base text-neem-dark">
+            {t("detail.showingRecent", { count: 50, total: visits.length })}
+          </p>
+        ) : null}
         <div className="mt-3 flex flex-col gap-3">
           {visits.length === 0 ? (
             <EmptyState
@@ -175,6 +180,7 @@ export default function PatientDetailPage() {
           ) : (
             [...visits]
               .sort((a, b) => (a.visited_at < b.visited_at ? 1 : -1))
+              .slice(0, 50)
               .map((v) => (
                 <div key={v.id} className="card">
                   <div className="flex items-center justify-between">

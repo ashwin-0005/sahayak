@@ -1,10 +1,30 @@
 // speechSynthesis wrapper. Best-effort: if the requested language's voice is
 // missing we report it so the UI can show a notice instead of failing silently.
 
+// Chrome/Android populates voices asynchronously — getVoices() returns [] on
+// first call. Warm the cache at module load and refresh on voiceschanged so
+// hasVoiceFor("hi") doesn't false-negative on Hindi devices.
+let cachedVoices: SpeechSynthesisVoice[] = [];
+function refreshVoices(): void {
+  if (typeof speechSynthesis === "undefined") return;
+  const list = speechSynthesis.getVoices();
+  if (list.length > 0) cachedVoices = list;
+}
+if (typeof speechSynthesis !== "undefined") {
+  refreshVoices();
+  speechSynthesis.onvoiceschanged = refreshVoices;
+}
+
+function allVoices(): SpeechSynthesisVoice[] {
+  if (typeof speechSynthesis === "undefined") return [];
+  const live = speechSynthesis.getVoices();
+  return live.length > 0 ? live : cachedVoices;
+}
+
 export function voiceFor(lang: "hi" | "en"): SpeechSynthesisVoice | undefined {
   if (typeof speechSynthesis === "undefined") return undefined;
   const target = lang === "hi" ? "hi-IN" : "en-IN";
-  const voices = speechSynthesis.getVoices();
+  const voices = allVoices();
   return (
     voices.find((v) => v.lang === target) ??
     voices.find((v) => v.lang.toLowerCase().replace("_", "-") === target.toLowerCase())

@@ -252,9 +252,16 @@ export async function initSyncEngine(): Promise<void> {
     status = "idle";
     void syncNow();
   });
-  // Every 60s while online.
+  // Every 60s while online — but never in a hidden tab (battery/radio), never
+  // on metered save-data connections, and never when there is nothing to
+  // push and the last pull is fresh (under 5 minutes old).
   setInterval(() => {
-    if (navigator.onLine) void syncNow();
+    if (!navigator.onLine) return;
+    if (document.visibilityState !== "visible") return;
+    const conn = navigator as Navigator & { connection?: { saveData?: boolean } };
+    if (conn.connection?.saveData) return;
+    if (pending === 0 && lastSyncedAt && Date.now() - Date.parse(lastSyncedAt) < 5 * 60 * 1000) return;
+    void syncNow();
   }, 60_000);
 }
 

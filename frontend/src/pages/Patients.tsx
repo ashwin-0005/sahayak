@@ -6,7 +6,7 @@ import { PageShell } from "../components/PageShell";
 import { PatientCard } from "../components/PatientCard";
 import { EmptyState } from "../components/EmptyState";
 import { PatientListSkeleton } from "../components/Skeleton";
-import { getAllPatients, getVisitsForPatient } from "../db/repo";
+import { getAllPatients, getAllVisits } from "../db/repo";
 import { lastRisk } from "../lib/records";
 import type { Condition, Patient, Visit } from "../types";
 
@@ -25,9 +25,8 @@ export default function PatientsPage() {
     void (async () => {
       const ps = await getAllPatients();
       setPatients(ps);
-      const vs: Visit[] = [];
-      for (const p of ps) vs.push(...(await getVisitsForPatient(p.id)));
-      setVisits(vs);
+      // One read, not N per-patient transactions.
+      setVisits(await getAllVisits());
       setLoaded(true);
     })();
   }, []);
@@ -122,9 +121,16 @@ export default function PatientsPage() {
             onAction={() => navigate("/patients/new")}
           />
         ) : (
-          filtered.map((p) => (
-            <PatientCard key={p.id} patient={p} lastRiskLevel={lastRisk(visits, p.id)} />
-          ))
+          <>
+            {filtered.length > 100 ? (
+              <p role="status" className="text-base text-neem-dark">
+                {t("patients.showingFirst", { count: 100, total: filtered.length })}
+              </p>
+            ) : null}
+            {filtered.slice(0, 100).map((p) => (
+              <PatientCard key={p.id} patient={p} lastRiskLevel={lastRisk(visits, p.id)} />
+            ))}
+          </>
         )}
       </div>
     </PageShell>

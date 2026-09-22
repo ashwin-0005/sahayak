@@ -8,15 +8,18 @@ import { withRetry } from "./lib/retry";
 import { WakeNotice } from "./components/WakeNotice";
 import LoginPage from "./pages/Login";
 import LandingPage from "./pages/Landing";
-import HomePage from "./pages/Home";
-import PatientsPage from "./pages/Patients";
-import PatientNewPage from "./pages/PatientNew";
+// Everything behind auth is route-split so the landing/login first paint
+// stays lean on 2G and low-RAM devices. (PatientDetail carries recharts —
+// the largest chunk — and must stay out of the main bundle.)
+const HomePage = lazy(() => import("./pages/Home"));
+const PatientsPage = lazy(() => import("./pages/Patients"));
+const PatientNewPage = lazy(() => import("./pages/PatientNew"));
 // recharts is heavy and used on one screen only — lazy so it stays out of the main chunk.
 const PatientDetailPage = lazy(() => import("./pages/PatientDetail"));
-import VisitNewPage from "./pages/VisitNew";
-import RiskResultPage from "./pages/RiskResult";
-import ReminderPage from "./pages/Reminder";
-import SettingsPage from "./pages/Settings";
+const VisitNewPage = lazy(() => import("./pages/VisitNew"));
+const RiskResultPage = lazy(() => import("./pages/RiskResult"));
+const ReminderPage = lazy(() => import("./pages/Reminder"));
+const SettingsPage = lazy(() => import("./pages/Settings"));
 
 function RouteFallback() {
   const { t } = useTranslation();
@@ -105,7 +108,9 @@ export default function App() {
         path="/home"
         element={
           <RequireAuth>
-            <HomePage />
+            <Suspense fallback={<RouteFallback />}>
+              <HomePage />
+            </Suspense>
           </RequireAuth>
         }
       />
@@ -113,7 +118,9 @@ export default function App() {
         path="/patients"
         element={
           <RequireAuth>
-            <PatientsPage />
+            <Suspense fallback={<RouteFallback />}>
+              <PatientsPage />
+            </Suspense>
           </RequireAuth>
         }
       />
@@ -121,7 +128,9 @@ export default function App() {
         path="/patients/new"
         element={
           <RequireAuth>
-            <PatientNewPage />
+            <Suspense fallback={<RouteFallback />}>
+              <PatientNewPage />
+            </Suspense>
           </RequireAuth>
         }
       />
@@ -139,7 +148,9 @@ export default function App() {
         path="/visits/:patientId/new"
         element={
           <RequireAuth>
-            <VisitNewPage />
+            <Suspense fallback={<RouteFallback />}>
+              <VisitNewPage />
+            </Suspense>
           </RequireAuth>
         }
       />
@@ -147,7 +158,9 @@ export default function App() {
         path="/risk/result"
         element={
           <RequireAuth>
-            <RiskResultPage />
+            <Suspense fallback={<RouteFallback />}>
+              <RiskResultPage />
+            </Suspense>
           </RequireAuth>
         }
       />
@@ -155,7 +168,9 @@ export default function App() {
         path="/reminders/:patientId"
         element={
           <RequireAuth>
-            <ReminderPage />
+            <Suspense fallback={<RouteFallback />}>
+              <ReminderPage />
+            </Suspense>
           </RequireAuth>
         }
       />
@@ -163,7 +178,9 @@ export default function App() {
         path="/settings"
         element={
           <RequireAuth>
-            <SettingsPage />
+            <Suspense fallback={<RouteFallback />}>
+              <SettingsPage />
+            </Suspense>
           </RequireAuth>
         }
       />

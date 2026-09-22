@@ -5,12 +5,13 @@ export function Toast({ message, onDone }: { message: string; onDone: () => void
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
+    setVisible(true);
     const timer = setTimeout(() => {
       setVisible(false);
       onDone();
     }, 2200);
     return () => clearTimeout(timer);
-  }, [onDone]);
+  }, [message, onDone]);
 
   if (!visible) return null;
 

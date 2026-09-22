@@ -7,7 +7,7 @@ import { PatientCard } from "../components/PatientCard";
 import { EmptyState } from "../components/EmptyState";
 import { DueListSkeleton, SummaryCardSkeleton } from "../components/Skeleton";
 import { getSession } from "../auth/auth";
-import { getAllPatients, getVisitsForPatient } from "../db/repo";
+import { getAllPatients, getAllVisits } from "../db/repo";
 import { dueNow, lastRisk, overdueDays } from "../lib/records";
 import type { Patient, Visit } from "../types";
 import { formatDate, formatNumber, isSameDay, todayUTC } from "../lib/dates";
@@ -32,11 +32,8 @@ export default function HomePage() {
   async function load() {
     const ps = await getAllPatients();
     setPatients(ps);
-    const vs: Visit[] = [];
-    for (const p of ps) {
-      vs.push(...(await getVisitsForPatient(p.id)));
-    }
-    setVisits(vs);
+    // One read, not N per-patient transactions.
+    setVisits(await getAllVisits());
     setLoaded(true);
   }
 

@@ -78,6 +78,10 @@ export async function recordVisit(
 // --- reads ----------------------------------------------------------------
 
 export async function getAllPatients(): Promise<Patient[]> {
+  // NOTE: kept as scan+filter on purpose — soft-deleted rows carry
+  // deleted_at=null and null is not a valid IndexedDB index key, so no index
+  // can express "not deleted". Patient tables are small (hundreds); the real
+  // saving is getAllVisits() below, which kills the N+1 fan-out.
   return (await db.patients.toArray()).filter((p) => p.deleted_at === null);
 }
 
@@ -88,6 +92,12 @@ export async function getPatient(id: string): Promise<Patient | undefined> {
 
 export async function getVisitsForPatient(patientId: string): Promise<Visit[]> {
   return db.visits.where("patient_id").equals(patientId).sortBy("visited_at");
+}
+
+// Single scan for list screens (Home, Patients): one IndexedDB read instead
+// of N per-patient transactions. Callers group by patient_id in memory.
+export async function getAllVisits(): Promise<Visit[]> {
+  return db.visits.toArray();
 }
 
 export async function getLastRiskForPatient(patientId: string): Promise<Visit | undefined> {

@@ -71,7 +71,8 @@
     "conditionFilter": "Condition filter",
     "allConditions": "All",
     "emptyTitle": "No patients found",
-    "emptyAction": "Register your first patient"
+    "emptyAction": "Register your first patient",
+    "showingFirst": "Showing first {{count}} of {{total}} — refine your search."
   },
   "patientNew": {
     "title": "New patient",
@@ -104,6 +105,7 @@
     "sugarTrendTitle": "Sugar trend",
     "noTrend": "No recent readings yet",
     "visitsTitle": "Visits",
+    "showingRecent": "Showing {{count}} most recent of {{total}} visits.",
     "noVisits": "No visits recorded yet",
     "noVisitsBody": "Log the first visit to start tracking",
     "conditionLabel": "Condition",

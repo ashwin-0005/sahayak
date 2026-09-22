@@ -34,6 +34,20 @@ export default defineConfig({
       }
     })
   ],
+  build: {
+    // Rarely-changing vendors in their own chunks: app-code deploys then
+    // only invalidate the small index chunk in the SW precache.
+    chunkSizeWarningLimit: 400,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-data": ["dexie", "i18next", "react-i18next"],
+          "vendor-icons": ["lucide-react"]
+        }
+      }
+    }
+  },
   test: {
     environment: "jsdom",
     globals: true,
