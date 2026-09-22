@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply bg-paper text-ink font-mukta text-body antialiased;
+  }
+  body {
+    @apply bg-paper text-ink;
+    margin: 0;
+    min-height: 100dvh;
+  }
+  button {
+    touch-action: manipulation;
+  }
+  input,
+  select,
+  textarea {
+    @apply font-mukta text-body;
+  }
+  /* Visible, consistent keyboard focus ring */
+  :focus-visible {
+    outline: 3px solid theme("colors.neem");
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  /* Respect reduced motion everywhere */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Big, thumb-sized primary interaction */
+  .btn {
+    @apply inline-flex min-h-[56px] items-center justify-center gap-2 rounded-button px-6 py-3 text-body font-semibold transition-colors duration-100;
+  }
+  .btn-primary {
+    @apply btn bg-neem text-white;
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+  .btn-secondary {
+    @apply btn bg-mist text-ink;
+  }
+  .btn-ghost {
+    @apply btn bg-transparent text-neem-dark;
+  }
+  .tag {
+    @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-base font-semibold;
+  }
+  .card {
+    @apply rounded-card border border-mist bg-white p-4;
+  }
+  /* Risk color left rail used structurally on cards */
+  .rail-urgent {
+    border-left: 6px solid theme("colors.urgent");
+  }
+  .rail-clinic {
+    border-left: 6px solid theme("colors.clinic");
+  }
+  .rail-home {
+    border-left: 6px solid theme("colors.home");
+  }
+  .num-key {
+    @apply h-[64px] w-full rounded-button bg-white text-big font-extrabold text-ink border border-mist active:bg-mist;
+  }
+}
+
+/* Risk panel slide-in, once */
+@keyframes panelUp {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.animate-panel-up {
+  animation: panelUp 220ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-panel-up {
+    animation: none;
+  }
+}
+
+/* Sheet (consent) slide up */
+@keyframes sheetUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.animate-sheet-up {
+  animation: sheetUp 240ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-sheet-up {
+    animation: none;
+  }
+}

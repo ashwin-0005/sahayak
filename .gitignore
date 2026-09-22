@@ -1,0 +1,17 @@
+# Dependencies (matches backend/ and frontend/ at any depth)
+node_modules/
+
+# Build output
+dist/
+
+# Environment files (never commit secrets)
+.env
+.env.*
+
+# Backend SQLite database files
+backend/data/
+
+# Test artifacts
+*.test.db
+*.test.db-journal
+coverage/
