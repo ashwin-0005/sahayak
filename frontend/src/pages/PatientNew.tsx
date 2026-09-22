@@ -117,14 +117,15 @@ export default function PatientNewPage() {
               onChange={(e) => setAge(e.target.value.replace(/\D/g, ""))}
             />
           </div>
-          <div className="col-span-3">
-            <span className="text-body font-bold text-ink">{t("patientNew.sex")}</span>
+          <div className="col-span-3" role="group" aria-label={t("patientNew.sex")}>
+            <span className="text-body font-bold text-ink" aria-hidden="true">{t("patientNew.sex")}</span>
             <div className="mt-1 grid grid-cols-3 gap-3">
               {SEX_OPTIONS.map(({ value, key, icon: Icon }) => (
                 <button
                   key={value}
                   type="button"
                   onClick={() => setSex(value)}
+                  aria-pressed={sex === value}
                   className={`flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-button text-base font-bold ${
                     sex === value ? "bg-neem text-white" : "bg-mist text-neem-dark"
                   }`}
@@ -163,14 +164,15 @@ export default function PatientNewPage() {
           />
         </div>
 
-        <div>
-          <span className="text-body font-bold text-ink">{t("patientNew.condition")}</span>
+        <div role="group" aria-label={t("patientNew.condition")}>
+          <span className="text-body font-bold text-ink" aria-hidden="true">{t("patientNew.condition")}</span>
           <div className="mt-1 grid grid-cols-2 gap-3">
             {CONDITION_OPTIONS.map(({ value, icon: Icon }) => (
               <button
                 key={value}
                 type="button"
                 onClick={() => setCondition(value)}
+                aria-pressed={condition === value}
                 className={`flex min-h-[64px] items-center gap-2 rounded-button px-4 text-body font-bold ${
                   condition === value ? "bg-neem text-white" : "bg-mist text-neem-dark"
                 }`}
@@ -182,14 +184,15 @@ export default function PatientNewPage() {
           </div>
         </div>
 
-        <div>
-          <span className="text-body font-bold text-ink">{t("patientNew.preferredLang")}</span>
+        <div role="group" aria-label={t("patientNew.preferredLang")}>
+          <span className="text-body font-bold text-ink" aria-hidden="true">{t("patientNew.preferredLang")}</span>
           <div className="mt-1 grid grid-cols-2 gap-3">
             {(["en", "hi"] as Language[]).map((l) => (
               <button
                 key={l}
                 type="button"
                 onClick={() => setLanguage(l)}
+                aria-pressed={language === l}
                 className={`min-h-[56px] rounded-button text-body font-bold ${
                   language === l ? "bg-neem text-white" : "bg-mist text-neem-dark"
                 }`}

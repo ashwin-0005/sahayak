@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { AlertTriangle, Download, Lock, RotateCcw, ShieldCheck, Trash2 } from "lucide-react";
 import { PageShell } from "../components/PageShell";
 import { BigButton } from "../components/BigButton";
 import { SyncStatus } from "../components/SyncStatus";
+import { useDialog } from "../lib/dialog";
 import { getSession, lockApp, deleteSession } from "../auth/auth";
 import { clearQuarantine, discardQuarantine, getAllPatients, getPatient, getQuarantine, resetLocalData } from "../db/repo";
 import { setLanguage, type UILang } from "../i18n";
@@ -21,6 +22,8 @@ export default function SettingsPage() {
   const [ready, setReady] = useState(false);
   const [quarantine, setQuarantine] = useState<QuarantineEntry[]>([]);
   const [quarantineNames, setQuarantineNames] = useState<Record<number, string>>({});
+  const resetRef = useRef<HTMLDivElement>(null);
+  useDialog(resetRef, confirming, () => setConfirming(false));
 
   const reloadQuarantine = async (): Promise<void> => {
     const rows = await getQuarantine();
@@ -99,6 +102,7 @@ export default function SettingsPage() {
               key={l}
               type="button"
               onClick={() => setLanguage(l)}
+              aria-pressed={lang === l}
               className={`min-h-[56px] rounded-button text-body font-bold ${
                 lang === l ? "bg-neem text-white" : "bg-mist text-neem-dark"
               }`}
@@ -182,18 +186,20 @@ export default function SettingsPage() {
       {confirming && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/50" role="presentation">
           <div
+            ref={resetRef}
             role="alertdialog"
             aria-modal="true"
             aria-label={t("settings.resetConfirmTitle")}
+            aria-describedby="reset-confirm-body"
             className="w-full max-w-[480px] rounded-t-card bg-paper p-5 shadow-sheet animate-sheet-up"
           >
             <p className="text-section font-extrabold text-urgent">{t("settings.resetConfirmTitle")}</p>
-            <p className="mt-2 text-body text-ink">{t("settings.resetConfirmBody")}</p>
+            <p id="reset-confirm-body" className="mt-2 text-body text-ink">{t("settings.resetConfirmBody")}</p>
             <div className="mt-5 flex flex-col gap-3">
               <BigButton variant="danger" icon={RotateCcw} onClick={() => void doReset()}>
                 {t("settings.resetConfirmYes")}
               </BigButton>
-              <BigButton variant="secondary" onClick={() => setConfirming(false)}>
+              <BigButton variant="secondary" dataAutofocus onClick={() => setConfirming(false)}>
                 {t("common.cancel")}
               </BigButton>
             </div>

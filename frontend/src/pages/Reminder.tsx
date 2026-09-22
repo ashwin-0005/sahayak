@@ -108,14 +108,15 @@ export default function ReminderPage() {
       </div>
       <p className="text-body font-bold text-neem-dark">{patient.name}</p>
 
-      <div className="mt-4">
-        <span className="text-body font-bold text-ink">{t("reminder.language")}</span>
+      <div className="mt-4" role="group" aria-label={t("reminder.language")}>
+        <span className="text-body font-bold text-ink" aria-hidden="true">{t("reminder.language")}</span>
         <div className="mt-1 grid grid-cols-2 gap-3">
           {(["en", "hi"] as Language[]).map((l) => (
             <button
               key={l}
               type="button"
               onClick={() => setLang(l)}
+              aria-pressed={lang === l}
               className={`min-h-[56px] rounded-button text-body font-bold ${
                 lang === l ? "bg-neem text-white" : "bg-mist text-neem-dark"
               }`}

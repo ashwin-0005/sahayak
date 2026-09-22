@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { Mic, MicOff, X } from "lucide-react";
@@ -8,6 +8,7 @@ import { NumberPad } from "../components/NumberPad";
 import { getPatient, recordVisit, setMeta } from "../db/repo";
 import { newId } from "../lib/ids";
 import { nextVisitDate } from "../lib/dates";
+import { useDialog } from "../lib/dialog";
 import { assessRisk } from "../risk/riskEngine";
 import { getRecognitionCtor } from "../voice/speak";
 import type { Patient, SugarType, Visit } from "../types";
@@ -46,6 +47,8 @@ export default function VisitNewPage() {
   const [notes, setNotes] = useState("");
   const [showPlausibility, setShowPlausibility] = useState(false);
   const [listening, setListening] = useState(false);
+  const plausibilityRef = useRef<HTMLDivElement>(null);
+  useDialog(plausibilityRef, showPlausibility, () => setShowPlausibility(false));
 
   useEffect(() => {
     void (async () => {
@@ -192,12 +195,13 @@ export default function VisitNewPage() {
       <div className="mt-5 flex flex-col gap-8">
         {(condition === "hypertension" || condition === "pregnancy") && (
           <>
-            <NumberPad value={systolic} onChange={(v) => setSystolic(v)} maxLength={3} label={t("visit.systolic")} />
+            <NumberPad value={systolic} onChange={(v) => setSystolic(v)} maxLength={3} label={t("visit.systolic")} id="systolic" />
             <NumberPad
               value={diastolic}
               onChange={(v) => setDiastolic(v.replace(/^0+/, ""))}
               maxLength={3}
               label={t("visit.diastolic")}
+              id="diastolic"
             />
           </>
         )}
@@ -210,6 +214,7 @@ export default function VisitNewPage() {
                   key={st}
                   type="button"
                   onClick={() => setSugarType(st)}
+                  aria-pressed={sugarType === st}
                   className={`min-h-[56px] flex-1 rounded-button text-body font-bold ${
                     sugarType === st ? "bg-neem text-white" : "bg-mist text-neem-dark"
                   }`}
@@ -218,15 +223,15 @@ export default function VisitNewPage() {
                 </button>
               ))}
             </div>
-            <NumberPad value={sugar} onChange={(v) => setSugar(v)} maxLength={3} label={t("visit.sugar")} />
+            <NumberPad value={sugar} onChange={(v) => setSugar(v)} maxLength={3} label={t("visit.sugar")} id="sugar" />
           </>
         )}
 
         {condition === "tb" && (
-          <div>
-            <label htmlFor="missed" className="text-body font-bold text-ink">
+          <div role="group" aria-label={t("visit.missedDoses")}>
+            <span className="text-body font-bold text-ink" aria-hidden="true">
               {t("visit.missedDoses")}
-            </label>
+            </span>
             <div className="mt-2 flex min-h-[56px] items-center gap-3 rounded-button bg-white p-2">
               <button
                 type="button"
@@ -236,7 +241,7 @@ export default function VisitNewPage() {
               >
                 −
               </button>
-              <span className="flex-1 text-center text-4xl font-extrabold tabular-nums">{missedDoses}</span>
+              <span role="status" className="flex-1 text-center text-4xl font-extrabold tabular-nums">{missedDoses}</span>
               <button
                 type="button"
                 className="num-key"
@@ -249,12 +254,13 @@ export default function VisitNewPage() {
           </div>
         )}
 
-        <div>
-          <span className="text-body font-bold text-ink">{t("visit.tookMedicine")}</span>
+        <div role="group" aria-label={t("visit.tookMedicine")}>
+          <span className="text-body font-bold text-ink" aria-hidden="true">{t("visit.tookMedicine")}</span>
           <div className="mt-1 grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => setMedicineTaken(true)}
+              aria-pressed={medicineTaken === true}
               className={`min-h-[56px] rounded-button text-body font-bold ${
                 medicineTaken === true ? "bg-home text-white" : "bg-mist text-neem-dark"
               }`}
@@ -264,6 +270,7 @@ export default function VisitNewPage() {
             <button
               type="button"
               onClick={() => setMedicineTaken(false)}
+              aria-pressed={medicineTaken === false}
               className={`min-h-[56px] rounded-button text-body font-bold ${
                 medicineTaken === false ? "bg-urgent text-white" : "bg-mist text-neem-dark"
               }`}
@@ -273,14 +280,15 @@ export default function VisitNewPage() {
           </div>
         </div>
 
-        <div>
-          <span className="text-body font-bold text-ink">{t("visit.symptomsTitle")}</span>
+        <div role="group" aria-label={t("visit.symptomsTitle")}>
+          <span className="text-body font-bold text-ink" aria-hidden="true">{t("visit.symptomsTitle")}</span>
           <div className="mt-2 flex flex-wrap gap-2">
             {symptomList.map((s) => (
               <button
                 key={s}
                 type="button"
                 onClick={() => toggleSymptom(s)}
+                aria-pressed={symptoms.includes(s)}
                 className={`tag min-h-[48px] ${
                   symptoms.includes(s) ? "bg-urgent text-white" : "bg-mist text-neem-dark"
                 }`}
@@ -326,15 +334,17 @@ export default function VisitNewPage() {
       {showPlausibility && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/50" role="presentation">
           <div
+            ref={plausibilityRef}
             role="alertdialog"
             aria-modal="true"
             aria-label={t("visit.implausibleTitle")}
+            aria-describedby="implausible-body"
             className="w-full max-w-[480px] rounded-t-card bg-paper p-5 shadow-sheet animate-sheet-up"
           >
             <p className="text-section font-extrabold text-urgent">{t("visit.implausibleTitle")}</p>
-            <p className="mt-2 text-body text-ink">{t("visit.implausibleBody")}</p>
+            <p id="implausible-body" className="mt-2 text-body text-ink">{t("visit.implausibleBody")}</p>
             <div className="mt-5 flex flex-col gap-3">
-              <BigButton variant="danger" onClick={() => setShowPlausibility(false)}>
+              <BigButton variant="danger" dataAutofocus onClick={() => setShowPlausibility(false)}>
                 {t("visit.recheck")}
               </BigButton>
               <BigButton variant="secondary" onClick={() => void doSave(true)}>

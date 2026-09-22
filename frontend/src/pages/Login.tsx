@@ -68,7 +68,8 @@ export default function LoginPage() {
               key={l}
               type="button"
               onClick={() => setLanguage(l)}
-              className={`rounded-full px-3 py-2 text-base font-bold ${
+              aria-pressed={lang === l}
+              className={`min-h-[48px] rounded-full px-3 py-2 text-base font-bold ${
                 lang === l ? "bg-neem text-white" : "bg-mist text-neem-dark"
               }`}
             >
@@ -97,7 +98,7 @@ export default function LoginPage() {
         />
 
         <div className="mt-6">
-          <NumberPad value={pin} onChange={setPin} maxLength={4} label={t("login.pin")} />
+          <NumberPad value={pin} onChange={setPin} maxLength={4} label={t("login.pin")} id="pin" />
         </div>
 
         {error ? (

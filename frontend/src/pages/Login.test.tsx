@@ -41,13 +41,14 @@ describe("Login cold-start experience", () => {
     fireEvent.click(screen.getByRole("button", { name: "Unlock" }));
 
     // Busy, but no wake message yet (under the 2s threshold).
+    // (The PIN readout is its own status region — scope to the wake text.)
     expect(screen.getByRole("button", { name: "Loading..." })).toBeDisabled();
-    expect(screen.queryByRole("status")).toBeNull();
+    expect(screen.queryByText(/Waking up the server/)).toBeNull();
 
     act(() => {
       vi.advanceTimersByTime(2100);
     });
 
-    expect(screen.getByRole("status")).toHaveTextContent("Waking up the server");
+    expect(screen.getByText(/Waking up the server/)).toBeInTheDocument();
   });
 });

@@ -10,13 +10,15 @@ import { getSession } from "../auth/auth";
 import { getAllPatients, getVisitsForPatient } from "../db/repo";
 import { dueNow, lastRisk, overdueDays } from "../lib/records";
 import type { Patient, Visit } from "../types";
-import { isSameDay, todayUTC } from "../lib/dates";
+import { formatDate, formatNumber, isSameDay, todayUTC } from "../lib/dates";
 import { useNavigate } from "react-router-dom";
 import type { Session } from "../auth/auth";
 
 export default function HomePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const lng = (i18n.language ?? "en").startsWith("hi") ? "hi" : "en";
+  const todayLabel = formatDate(`${todayUTC()}T00:00:00.000Z`, lng);
   const [session, setSession] = useState<Session | null>(null);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [visits, setVisits] = useState<Visit[]>([]);
@@ -61,7 +63,7 @@ export default function HomePage() {
             <h1 className="text-page font-extrabold text-ink">
               {t("home.greeting", { name: session?.worker.name ?? "" })}
             </h1>
-            <p className="text-body text-neem-dark">{todayUTC()}</p>
+            <p className="text-body text-neem-dark">{todayLabel}</p>
           </div>
           <UserRound className="size-9 text-neem" aria-hidden="true" />
         </header>
@@ -106,7 +108,7 @@ export default function HomePage() {
         {summary.map(({ label, value, icon: Icon, color }) => (
           <div key={label} className="card flex flex-col items-center gap-1 text-center">
             <Icon className="size-6" style={{ color }} aria-hidden="true" />
-            <span className="text-4xl font-extrabold tabular-nums text-ink">{value}</span>
+            <span className="text-4xl font-extrabold tabular-nums text-ink">{formatNumber(value, lng)}</span>
             <span className="text-base font-semibold text-neem-dark">{label}</span>
           </div>
         ))}

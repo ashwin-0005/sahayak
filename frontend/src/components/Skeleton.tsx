@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 export function Skeleton({ className = "" }: { className?: string }) {
   return (
     <div
@@ -28,8 +30,10 @@ export function PatientCardSkeleton() {
 }
 
 export function PatientListSkeleton({ count = 3 }: { count?: number }) {
+  const { t } = useTranslation();
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3" role="status" aria-label={t("common.loading")}>
+      <span className="sr-only">{t("common.loading")}</span>
       {Array.from({ length: count }, (_, i) => (
         <PatientCardSkeleton key={i} />
       ))}
@@ -38,8 +42,10 @@ export function PatientListSkeleton({ count = 3 }: { count?: number }) {
 }
 
 export function DueListSkeleton({ count = 3 }: { count?: number }) {
+  const { t } = useTranslation();
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3" role="status" aria-label={t("common.loading")}>
+      <span className="sr-only">{t("common.loading")}</span>
       {Array.from({ length: count }, (_, i) => (
         <div key={i} className="card p-4 animate-pulse space-y-3 rail-clinic">
           <div className="flex items-start justify-between gap-3">
@@ -63,8 +69,10 @@ export function DueListSkeleton({ count = 3 }: { count?: number }) {
 }
 
 export function SummaryCardSkeleton() {
+  const { t } = useTranslation();
   return (
-    <div className="card flex flex-col items-center gap-1 text-center animate-pulse">
+    <div className="card flex flex-col items-center gap-1 text-center animate-pulse" role="status" aria-label={t("common.loading")}>
+      <span className="sr-only">{t("common.loading")}</span>
       <Skeleton className="size-6" />
       <Skeleton className="text-4xl w-12" />
       <Skeleton className="text-base w-20" />

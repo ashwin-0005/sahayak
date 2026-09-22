@@ -14,7 +14,8 @@ interface PatientCardProps {
 
 // Patient list card with the condition-colored left rail, icon + words + color.
 export function PatientCard({ patient, lastRiskLevel, onClick }: PatientCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lng = (i18n.language ?? "en").startsWith("hi") ? "hi" : "en";
   const overdue = patient.next_visit_date
     ? daysOverdue(patient.next_visit_date, todayUTC())
     : null;
@@ -46,7 +47,7 @@ export function PatientCard({ patient, lastRiskLevel, onClick }: PatientCardProp
                   ? t("home.overdueBy", { days: overdue })
                   : overdue === 0
                     ? t("home.dueToday")
-                    : t("detail.nextVisit", { date: patient.next_visit_date ? formatDate(patient.next_visit_date) : "" })}
+                    : t("detail.nextVisit", { date: patient.next_visit_date ? formatDate(patient.next_visit_date, lng) : "" })}
               </>
             ) : null}
           </p>

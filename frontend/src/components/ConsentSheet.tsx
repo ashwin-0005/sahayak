@@ -1,7 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { X } from "lucide-react";
 import { BigButton } from "./BigButton";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
+import { useDialog } from "../lib/dialog";
 
 interface ConsentSheetProps {
   open: boolean;
@@ -13,11 +14,8 @@ interface ConsentSheetProps {
 
 export function ConsentSheet({ open, checked, onCheck, onClose, onSave }: ConsentSheetProps) {
   const { t } = useTranslation();
-  const closeRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    if (open) closeRef.current?.focus();
-  }, [open]);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  useDialog(sheetRef, open, onClose);
 
   if (!open) return null;
 
@@ -28,16 +26,18 @@ export function ConsentSheet({ open, checked, onCheck, onClose, onSave }: Consen
       onClick={onClose}
     >
       <div
+        ref={sheetRef}
         role="dialog"
         aria-modal="true"
         aria-label={t("patientNew.consentTitle")}
+        aria-describedby="consent-body"
         className="w-full max-w-[480px] rounded-t-card bg-paper p-5 shadow-sheet animate-sheet-up"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
           <h2 className="text-section font-extrabold">{t("patientNew.consentTitle")}</h2>
           <button
-            ref={closeRef}
+            data-autofocus
             type="button"
             className="btn-ghost min-h-[48px] px-3"
             onClick={onClose}
@@ -46,7 +46,7 @@ export function ConsentSheet({ open, checked, onCheck, onClose, onSave }: Consen
             <X className="size-6" aria-hidden="true" />
           </button>
         </div>
-        <p className="mt-3 text-body text-ink">{t("patientNew.consentBody")}</p>
+        <p id="consent-body" className="mt-3 text-body text-ink">{t("patientNew.consentBody")}</p>
 
         <label className="mt-5 flex min-h-[56px] cursor-pointer items-start gap-3 rounded-card bg-mist p-4">
           <input

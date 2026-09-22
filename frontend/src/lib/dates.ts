@@ -37,6 +37,12 @@ export function formatTime(iso: string, locale = "en"): string {
   }).format(d);
 }
 
+// Counts and readings in the user's numeral system (Devanagari digits for
+// Hindi) so dates and adjacent numbers don't mix scripts.
+export function formatNumber(value: number, locale = "en"): string {
+  return new Intl.NumberFormat(locale === "hi" ? "hi-IN" : "en-IN").format(value);
+}
+
 export function isSameDay(iso: string): boolean {
   const d = new Date(iso);
   const now = new Date();

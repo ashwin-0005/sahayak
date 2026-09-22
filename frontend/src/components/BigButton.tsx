@@ -9,6 +9,8 @@ interface BigButtonProps {
   onClick?: () => void;
   className?: string;
   type?: "button" | "submit";
+  // Marks this button as the dialog's initial focus target (see useDialog).
+  dataAutofocus?: boolean;
 }
 
 const VARIANTS: Record<string, string> = {
@@ -25,7 +27,8 @@ export function BigButton({
   disabled,
   onClick,
   className = "",
-  type = "button"
+  type = "button",
+  dataAutofocus = false
 }: BigButtonProps) {
   return (
     <button
@@ -33,6 +36,7 @@ export function BigButton({
       className={`${VARIANTS[variant]} ${disabled ? "opacity-45" : ""} active:scale-[0.98] transition-transform duration-75 ${className}`}
       onClick={onClick}
       disabled={disabled}
+      {...(dataAutofocus ? { "data-autofocus": true } : {})}
     >
       {Icon ? <Icon className="size-6" aria-hidden="true" /> : null}
       <span>{children}</span>

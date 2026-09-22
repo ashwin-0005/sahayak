@@ -60,13 +60,13 @@ export default function PatientsPage() {
           />
         </label>
 
-        <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Condition filter">
+        <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label={t("patients.conditionFilter")}>
           {FILTERS.map((c) => (
             <button
               key={c}
               type="button"
               disabled
-              className={`tag opacity-50 ${
+              className={`tag min-h-[48px] opacity-50 ${
                 filter === c ? "bg-neem text-white" : "bg-mist text-neem-dark"
               }`}
             >
@@ -97,13 +97,14 @@ export default function PatientsPage() {
         />
       </label>
 
-      <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Condition filter">
+      <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label={t("patients.conditionFilter")}>
         {FILTERS.map((c) => (
-          <button
-            key={c}
-            type="button"
-            onClick={() => setFilter(c)}
-            className={`tag ${
+            <button
+              key={c}
+              type="button"
+              onClick={() => setFilter(c)}
+              aria-pressed={filter === c}
+              className={`tag min-h-[48px] ${
               filter === c ? "bg-neem text-white" : "bg-mist text-neem-dark"
             }`}
           >

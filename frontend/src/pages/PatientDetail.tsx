@@ -129,8 +129,8 @@ export default function PatientDetailPage() {
                 <YAxis domain={[40, 220]} tick={{ fontSize: 12 }} />
                 <Tooltip />
                 <Legend />
-                <ReferenceLine y={140} label="140" stroke="#E08A00" strokeDasharray="4 4" />
-                <ReferenceLine y={90} label="90" stroke="#E08A00" strokeDasharray="4 4" />
+                <ReferenceLine y={140} label="140" stroke="#B45309" strokeDasharray="4 4" />
+                <ReferenceLine y={90} label="90" stroke="#B45309" strokeDasharray="4 4" />
                 <ReferenceLine y={180} label="180" stroke="#C62828" strokeDasharray="4 4" />
                 <ReferenceLine y={120} label="120" stroke="#C62828" strokeDasharray="4 4" />
                 <Line type="monotone" dataKey="sys" name={`${t("detail.bp")} sys`} stroke="#1D6A50" strokeWidth={3} dot={{ r: 3 }} />
@@ -152,8 +152,8 @@ export default function PatientDetailPage() {
                 <YAxis domain={[40, 400]} tick={{ fontSize: 12 }} />
                 <Tooltip />
                 <Legend />
-                <ReferenceLine y={126} label="126" stroke="#E08A00" strokeDasharray="4 4" />
-                <ReferenceLine y={200} label="200" stroke="#E08A00" strokeDasharray="4 4" />
+                <ReferenceLine y={126} label="126" stroke="#B45309" strokeDasharray="4 4" />
+                <ReferenceLine y={200} label="200" stroke="#B45309" strokeDasharray="4 4" />
                 <Line type="monotone" dataKey="sugar" name={t("detail.sugar")} stroke="#1D6A50" strokeWidth={3} dot={{ r: 3 }} />
               </LineChart>
             </ResponsiveContainer>

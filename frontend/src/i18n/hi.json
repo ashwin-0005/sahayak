@@ -68,6 +68,7 @@
     "title": "मरीज़",
     "search": "खोजें",
     "searchPlaceholder": "नाम या गाँव खोजें",
+    "conditionFilter": "बीमारी चुनें",
     "allConditions": "सभी",
     "emptyTitle": "कोई मरीज़ नहीं मिला",
     "emptyAction": "पहला मरीज़ दर्ज करें"

@@ -68,6 +68,7 @@
     "title": "Patients",
     "search": "Search",
     "searchPlaceholder": "Search name or village",
+    "conditionFilter": "Condition filter",
     "allConditions": "All",
     "emptyTitle": "No patients found",
     "emptyAction": "Register your first patient"
