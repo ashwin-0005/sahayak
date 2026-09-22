@@ -3,7 +3,7 @@ import request from "supertest";
 import { createApp } from "../src/app.js";
 import { getDb } from "../src/db/client.js";
 import { ensureSeeded } from "../src/seed/seed.js";
-import { useTestDb } from "./helpers.js";
+import { seedWorker, useTestDb } from "./helpers.js";
 
 const app = createApp();
 
@@ -30,8 +30,7 @@ describe("seed: idempotent demo bootstrap", () => {
     expect(after).toBe(before);
   });
 
-  it("demo login works and demo data stays worker-isolated", async () => {
-    ensureSeeded();
+  it("demo login works and demo data stays worker-isolated", async () => {    ensureSeeded();
     const login = await request(app).post("/api/auth/login").send({ workerId: "demo", pin: "0000" });
     expect(login.status).toBe(200);
     expect(login.body.worker.id).toBe("demo");
@@ -40,5 +39,24 @@ describe("seed: idempotent demo bootstrap", () => {
     expect(list.status).toBe(200);
     const ids = new Set((list.body.patients as { worker_id: string }[]).map((p) => p.worker_id));
     expect(ids).toEqual(new Set(["demo"]));
+  });
+
+  it("backfills the demo account on databases seeded before it existed", async () => {
+    // Simulate a legacy database: a worker, but no demo account or workspace.
+    seedWorker("w1", "1234", "Asha One", "VillageA");
+    expect(getDb().prepare("SELECT COUNT(*) c FROM patients").get()).toMatchObject({ c: 0 });
+
+    ensureSeeded();
+
+    const workers = getDb().prepare("SELECT id FROM workers ORDER BY id").all() as { id: string }[];
+    expect(workers.map((w) => w.id)).toEqual(["demo", "w1"]);
+    const demoPatients = getDb()
+      .prepare("SELECT COUNT(*) c FROM patients WHERE worker_id='demo'")
+      .get() as { c: number };
+    expect(demoPatients.c).toBe(3);
+
+    // And the pre-existing worker still logs in.
+    const login = await request(app).post("/api/auth/login").send({ workerId: "w1", pin: "1234" });
+    expect(login.status).toBe(200);
   });
 });

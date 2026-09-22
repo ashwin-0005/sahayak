@@ -44,6 +44,9 @@ export function ensureSeeded(): void {
   // otherwise leave an empty database and break every login.)
   const existingWorkers = (db.prepare("SELECT COUNT(*) c FROM workers").get() as { c: number }).c;
   if (existingWorkers > 0) {
+    // Databases seeded before the public demo account existed need it
+    // backfilled — without touching any other row.
+    ensureDemoBackfill(db, now);
     // eslint-disable-next-line no-console
     console.log(`Seed skipped: ${existingWorkers} worker(s) already exist.`);
     return;
@@ -166,8 +169,18 @@ const invokedDirectly = (process.argv[1] ?? "").replace(/\\/g, "/").endsWith("se
   (process.argv[1] ?? "").replace(/\\/g, "/").endsWith("seed/seed.js");
 if (invokedDirectly) ensureSeeded();
 
-function seedDemoWorkspace(db: ReturnType<typeof getDb>, now: string): void {
-  const demoPatients: { name: string; age: number; sex: string; condition: Condition; daysAgo: number; systolic: number | null; diastolic: number | null; sugar: number | null; sugarType: "fasting" | "random" | null }[] = [
+// Backfill for databases seeded before the public demo account existed:
+// inserts demo + its workspace only when missing, touches nothing else.
+function ensureDemoBackfill(db: ReturnType<typeof getDb>, now: string): void {
+  const existing = db.prepare("SELECT id FROM workers WHERE id='demo'").get();
+  if (existing) return;
+  db.prepare("INSERT INTO workers (id, name, village, pin_hash, created_at) VALUES (?,?,?,?,?)").run(
+    "demo", "Demo Worker", "Demo Village", bcrypt.hashSync("0000", 10), now
+  );
+  seedDemoWorkspace(db, now);
+}
+
+function seedDemoWorkspace(db: ReturnType<typeof getDb>, now: string): void {  const demoPatients: { name: string; age: number; sex: string; condition: Condition; daysAgo: number; systolic: number | null; diastolic: number | null; sugar: number | null; sugarType: "fasting" | "random" | null }[] = [
     { name: "Demo Devi", age: 52, sex: "F", condition: "hypertension", daysAgo: 40, systolic: 182, diastolic: 112, sugar: null, sugarType: null },
     { name: "Demo Kumar", age: 48, sex: "M", condition: "diabetes", daysAgo: 10, systolic: null, diastolic: null, sugar: 210, sugarType: "random" },
     { name: "Demo Bai", age: 26, sex: "F", condition: "pregnancy", daysAgo: 5, systolic: 118, diastolic: 76, sugar: null, sugarType: null },
