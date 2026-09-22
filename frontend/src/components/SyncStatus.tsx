@@ -1,9 +1,11 @@
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { CloudOff, KeyRound, RefreshCw, AlertTriangle, Check, Clock } from "lucide-react";
+import { Clock, KeyRound, RefreshCw } from "lucide-react";
 import { useSync } from "../sync/useSync";
 import { formatTime } from "../lib/dates";
 import { useSlowNotice } from "../lib/useSlow";
+import { Badge } from "./Badge";
+import { StatusChip } from "./StatusChip";
 
 export function SyncStatus({ onSynced }: { onSynced?: () => void }) {
   const { t, i18n } = useTranslation();
@@ -13,44 +15,11 @@ export function SyncStatus({ onSynced }: { onSynced?: () => void }) {
 
   const pendingLabel = sync.pending === 1 ? t("status.pendingOne") : t("status.pending", { count: sync.pending });
 
-  const chip = () => {
-    const base = "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-base font-bold";
-    if (sync.status === "offline")
-      return (
-        <span className={`${base} bg-mist text-ink`}>
-          <CloudOff className="size-4" aria-hidden="true" />
-          {t("status.offline")}
-        </span>
-      );
-    if (sync.status === "syncing")
-      return (
-        <span className={`${base} bg-neem text-white`}>
-          <RefreshCw className="size-4 animate-spin" aria-hidden="true" />
-          {t("status.syncing")}
-        </span>
-      );
-    if (sync.status === "error")
-      return (
-        <span className={`${base} bg-urgent text-white`}>
-          <AlertTriangle className="size-4" aria-hidden="true" />
-          {t("status.error")}
-        </span>
-      );
-    return (
-      <span className={`${base} bg-mist text-neem-dark`}>
-        <Check className="size-4" aria-hidden="true" />
-        {t("status.online")}
-      </span>
-    );
-  };
-
   return (
     <div className="card flex flex-wrap items-center justify-between gap-3">
       <div className="flex items-center gap-2">
-        {chip()}
-        {sync.pending > 0 && (
-          <span className="tag bg-clinic text-ink">{pendingLabel}</span>
-        )}
+        <StatusChip status={sync.status} />
+        {sync.pending > 0 ? <Badge tone="warning">{pendingLabel}</Badge> : null}
         {sync.authExpired ? (
           <span role="alert" className="text-base font-bold text-urgent">
             {t("status.authExpired")}

@@ -49,7 +49,7 @@ export default function LandingPage() {
           <div
             role="region"
             aria-label={t("landing.demoTitle")}
-            className="mt-3 w-full max-w-[320px] rounded-card bg-mist p-4 text-left text-base text-ink"
+            className="mt-3 w-full max-w-[320px] alert alert-info text-left text-base text-ink"
           >
             <p className="font-semibold mb-2">{t("landing.demoTitle")}</p>
             <p className="mb-1">{t("landing.demoId")}</p>

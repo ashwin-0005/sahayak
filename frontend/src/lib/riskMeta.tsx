@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { AlertOctagon, Building2, HeartPulse } from "lucide-react";
+import { colorToken } from "../theme/tokens";
 import type { RiskLevel } from "../types";
 
 export interface RiskMeta {
@@ -8,10 +9,12 @@ export interface RiskMeta {
   icon: LucideIcon;
 }
 
+// Color comes from the shared design tokens so the palette can never drift.
+// Risk also always travels with an icon and words (see RiskBadge/RiskBanner).
 export const RISK_META: Record<RiskLevel, RiskMeta> = {
-  urgent: { color: "#C62828", bg: "#C62828", icon: AlertOctagon },
-  clinic: { color: "#B45309", bg: "#B45309", icon: Building2 },
-  home: { color: "#2E7D32", bg: "#2E7D32", icon: HeartPulse }
+  urgent: { color: colorToken.urgent, bg: colorToken.urgent, icon: AlertOctagon },
+  clinic: { color: colorToken.clinic, bg: colorToken.clinic, icon: Building2 },
+  home: { color: colorToken.home, bg: colorToken.home, icon: HeartPulse }
 };
 
 // Map a risk level to the "reason in plain words" i18n key.

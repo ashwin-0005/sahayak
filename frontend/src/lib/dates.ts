@@ -17,6 +17,17 @@ export function daysOverdue(nextVisitDateStr: string, asOfDateStr: string): numb
   return Math.floor((asOf - due) / msPerDay);
 }
 
+// Long day header for dashboards, e.g. "Tuesday, 22 September" (locale-aware).
+export function formatDay(isoDate: string, locale = "en"): string {
+  const d = new Date(`${isoDate}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return isoDate;
+  return new Intl.DateTimeFormat(locale === "hi" ? "hi-IN" : "en-IN", {
+    weekday: "long",
+    day: "numeric",
+    month: "long"
+  }).format(d);
+}
+
 export function formatDate(isoOrDate: string, locale = "en"): string {
   const d = new Date(isoOrDate);
   if (Number.isNaN(d.getTime())) return isoOrDate;

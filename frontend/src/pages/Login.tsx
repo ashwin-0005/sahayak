@@ -4,7 +4,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { loginOnline, unlockOffline } from "../auth/auth";
 import { NumberPad } from "../components/NumberPad";
 import { BigButton } from "../components/BigButton";
-import { setLanguage, type UILang } from "../i18n";
+import { Field } from "../components/Field";
+import { Alert } from "../components/Alert";
+import { ToggleGroup } from "../components/ToggleGroup";
+import { setLanguage } from "../i18n";
 import { syncNow } from "../sync/syncEngine";
 import { ApiErrorClass } from "../lib/api";
 import { useSlowNotice } from "../lib/useSlow";
@@ -64,55 +67,47 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col px-5 pb-10 pt-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-page font-extrabold text-ink">{t("app.name")}</h1>
-          <p className="text-body text-neem-dark">{t("app.tagline")}</p>
-        </div>
-        <div className="flex gap-1" role="group" aria-label={t("login.languageLabel")}>
-          {(["en", "hi"] as UILang[]).map((l) => (
-            <button
-              key={l}
-              type="button"
-              onClick={() => setLanguage(l)}
-              aria-pressed={lang === l}
-              className={`min-h-[48px] rounded-full px-3 py-2 text-base font-bold ${
-                lang === l ? "bg-neem text-white" : "bg-mist text-neem-dark"
-              }`}
-            >
-              {l === "en" ? "English" : "हिन्दी"}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-10 flex flex-1 flex-col">
-        <div className="mb-2 flex items-center gap-2 text-base font-semibold text-neem-dark">
-          {t(online ? "login.subtitle" : "login.unlockOffline")}
+<div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-page font-extrabold text-ink">{t("app.name")}</h1>
+            <p className="text-body text-neem-dark">{t("app.tagline")}</p>
+          </div>
+          <ToggleGroup
+            pill
+            label={t("login.languageLabel")}
+            value={lang}
+            onChange={(v) => setLanguage(v)}
+            options={[
+              { value: "en", label: "English" },
+              { value: "hi", label: "हिन्दी" }
+            ]}
+          />
         </div>
 
-        <label htmlFor="workerId" className="mt-4 block text-body font-bold text-ink">
-          {t("login.workerId")}
-        </label>
-        <input
-          id="workerId"
-          className="mt-1 min-h-[56px] w-full rounded-button border border-mist bg-white px-4"
-          value={workerId}
-          onChange={(e) => setWorkerId(e.target.value)}
-          inputMode="text"
-          autoCapitalize="none"
-          autoComplete="username"
-        />
+        <div className="mt-10 flex flex-1 flex-col">
+          <div className="mb-2 flex items-center gap-2 text-base font-semibold text-neem-dark">
+            {t(online ? "login.subtitle" : "login.unlockOffline")}
+          </div>
 
-        <div className="mt-6">
-          <NumberPad value={pin} onChange={setPin} maxLength={4} label={t("login.pin")} id="pin" />
-        </div>
+          <div className="mt-2">
+            <Field label={t("login.workerId")} htmlFor="workerId">
+              <input
+                id="workerId"
+                className="input"
+                value={workerId}
+                onChange={(e) => setWorkerId(e.target.value)}
+                inputMode="text"
+                autoCapitalize="none"
+                autoComplete="username"
+              />
+            </Field>
+          </div>
 
-        {error ? (
-          <p role="alert" className="mt-3 text-body font-bold text-urgent">
-            {error}
-          </p>
-        ) : null}
+          <div className="mt-6">
+            <NumberPad value={pin} onChange={setPin} maxLength={4} label={t("login.pin")} id="pin" />
+          </div>
+
+          {error ? <Alert tone="danger" role="alert" title={error} className="mt-3" /> : null}
 
         <BigButton
           className="mt-6"

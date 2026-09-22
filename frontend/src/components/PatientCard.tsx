@@ -1,7 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { CalendarClock, ChevronRight } from "lucide-react";
-import { RISK_META } from "../lib/riskMeta";
+import { CalendarClock, ChevronRight, CloudUpload } from "lucide-react";
+import { Badge } from "./Badge";
+import { RiskBadge } from "./RiskBadge";
 import { ConditionBadge } from "./ConditionBadge";
 import { daysOverdue, formatDate, todayUTC } from "../lib/dates";
 import type { Patient, RiskLevel } from "../types";
@@ -10,10 +11,13 @@ interface PatientCardProps {
   patient: Patient;
   lastRiskLevel: RiskLevel | null;
   onClick?: () => void;
+  // Marks a patient that has changes saved locally but not yet uploaded.
+  waitingSync?: boolean;
 }
 
-// Patient list card with the condition-colored left rail, icon + words + color.
-export function PatientCard({ patient, lastRiskLevel, onClick }: PatientCardProps) {
+// Patient list card with the condition-colored left rail. Risk and sync
+// state are always icon + words + rail — never colour alone.
+export function PatientCard({ patient, lastRiskLevel, onClick, waitingSync = false }: PatientCardProps) {
   const { t, i18n } = useTranslation();
   const lng = (i18n.language ?? "en").startsWith("hi") ? "hi" : "en";
   const overdue = patient.next_visit_date
@@ -22,7 +26,6 @@ export function PatientCard({ patient, lastRiskLevel, onClick }: PatientCardProp
   const risk = lastRiskLevel ?? "home";
   const railClass =
     risk === "urgent" ? "rail-urgent" : risk === "clinic" ? "rail-clinic" : "rail-home";
-  const Icon = RISK_META[risk].icon;
 
   return (
     <Link
@@ -38,6 +41,11 @@ export function PatientCard({ patient, lastRiskLevel, onClick }: PatientCardProp
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <ConditionBadge condition={patient.condition} />
+            {waitingSync ? (
+              <Badge tone="warning" icon={CloudUpload} role="status">
+                {t("home.waitingToSync")}
+              </Badge>
+            ) : null}
           </div>
           <p className="mt-2 flex items-center gap-1 text-base text-ink">
             {overdue !== null ? (
@@ -52,9 +60,8 @@ export function PatientCard({ patient, lastRiskLevel, onClick }: PatientCardProp
             ) : null}
           </p>
         </div>
-        <span className="flex shrink-0 items-center gap-1 text-base font-semibold text-ink">
-          <Icon className="size-5" style={{ color: RISK_META[risk].color }} aria-hidden="true" />
-          {t(`risk.${risk}`)}
+        <span className="flex shrink-0 items-center gap-1">
+          <RiskBadge level={risk} />
           <ChevronRight className="size-4 text-mist" aria-hidden="true" />
         </span>
       </div>

@@ -19,11 +19,11 @@
   textarea {
     @apply font-mukta text-body;
   }
-  /* Visible, consistent keyboard focus ring */
+  /* Visible, consistent keyboard focus ring. Outlines follow each control's
+     own border-radius, so no hardcoded radius is needed here. */
   :focus-visible {
-    outline: 3px solid theme("colors.neem");
+    outline: 3px solid theme("colors.focus");
     outline-offset: 2px;
-    border-radius: 4px;
   }
   /* Respect reduced motion everywhere */
   @media (prefers-reduced-motion: reduce) {
@@ -43,22 +43,69 @@
     @apply inline-flex min-h-[56px] items-center justify-center gap-2 rounded-button px-6 py-3 text-body font-semibold transition-colors duration-100;
   }
   .btn-primary {
-    @apply btn bg-neem text-white;
+    @apply btn bg-primary text-white;
     &:active {
       transform: scale(0.98);
     }
   }
   .btn-secondary {
-    @apply btn bg-mist text-ink;
+    @apply btn bg-surface-muted text-ink;
   }
   .btn-ghost {
-    @apply btn bg-transparent text-neem-dark;
+    @apply btn bg-transparent text-primary-dark;
   }
-  .tag {
+  .tag,
+  .badge {
     @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-base font-semibold;
   }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-base font-bold;
+  }
   .card {
-    @apply rounded-card border border-mist bg-white p-4;
+    @apply rounded-card border border-mist bg-white p-4 shadow-card;
+  }
+  /* Form controls: one shared look everywhere */
+  .input {
+    @apply min-h-[56px] w-full rounded-button border border-mist bg-white px-4;
+  }
+  .textarea {
+    @apply w-full rounded-button border border-mist bg-white px-4 py-3;
+  }
+  .field-label {
+    @apply block text-body font-bold text-ink;
+  }
+  .field-hint {
+    @apply mt-1 text-label text-neem-dark;
+  }
+  .field-error {
+    @apply mt-1 text-label font-semibold text-danger;
+  }
+  /* Non-blocking status banner. Shadow the Alert component; these class
+     pairs (alert + alert-<tone>) are reusable when raw JSX is simpler. */
+  .alert {
+    @apply rounded-card border border-mist p-4;
+  }
+  .alert-offline {
+    @apply bg-mist/60;
+  }
+  .alert-danger {
+    @apply bg-urgent/10;
+  }
+  .alert-warning {
+    @apply bg-clinic/15;
+  }
+  .alert-info {
+    @apply bg-neem/10;
+  }
+  .alert-success {
+    @apply bg-home/10;
+  }
+  /* Bottom-sheet modal chrome. Shadow the Sheet component. */
+  .sheet-overlay {
+    @apply fixed inset-0 z-50 flex items-end justify-center bg-ink/50;
+  }
+  .sheet {
+    @apply w-full max-w-[480px] rounded-t-card bg-paper p-5 shadow-sheet animate-sheet-up;
   }
   /* Risk color left rail used structurally on cards */
   .rail-urgent {
