@@ -41,7 +41,7 @@ export function DueListSkeleton({ count = 3 }: { count?: number }) {
   return (
     <div className="flex flex-col gap-3">
       {Array.from({ length: count }, (_, i) => (
-        <div key={i} className="card p-4 animate-pulse space-y-3 border-l-6 border-l-neem">
+        <div key={i} className="card p-4 animate-pulse space-y-3 rail-clinic">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1 space-y-2">
               <Skeleton className="h-6 w-3/4" />

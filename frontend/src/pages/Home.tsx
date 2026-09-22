@@ -49,7 +49,7 @@ export default function HomePage() {
 
   const summary = [
     { label: t("home.urgentCount"), value: counts.urgent, icon: Siren, color: "#C62828" },
-    { label: t("home.overdueCount"), value: counts.overdue, icon: Hourglass, color: "#E08A00" },
+    { label: t("home.overdueCount"), value: counts.overdue, icon: Hourglass, color: "#B45309" },
     { label: t("home.visitsTodayCount"), value: counts.today, icon: HeartPulse, color: "#1D6A50" }
   ];
 

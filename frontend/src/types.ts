@@ -61,6 +61,29 @@ export interface SyncResult {
   patients: Patient[];
   visits: Visit[];
   serverTime: string;
+  results?: RecordResult[];
+}
+
+// Per-record acknowledgement from POST /api/sync. `accepted` covers inserts,
+// updates, and idempotent no-ops; only `accepted` rows may leave the outbox.
+export interface RecordResult {
+  table: "patients" | "visits";
+  id: string;
+  status: "accepted" | "rejected";
+  code?: string;
+  message?: string;
+}
+
+// A pushed record the server refused (or that was corrupt locally). Kept
+// visible in Settings ("Sync issues") so it never blocks the queue or
+// vanishes silently. `record` is the parsed snapshot when available.
+export interface QuarantineEntry {
+  id?: number; // auto-increment
+  table: "patients" | "visits";
+  record: unknown;
+  code: string;
+  message: string;
+  created_at: string;
 }
 
 export type SyncStatus = "idle" | "syncing" | "offline" | "error";

@@ -57,7 +57,7 @@ export async function postLogin(workerId: string, pin: string): Promise<{ token:
 export async function postSync(
   token: string,
   payload: { lastPulledAt: string | null; patients: unknown[]; visits: unknown[] }
-): Promise<{ patients: Record<string, unknown>[]; visits: Record<string, unknown>[]; serverTime: string }> {
+): Promise<{ patients: Record<string, unknown>[]; visits: Record<string, unknown>[]; serverTime: string; results?: { table: "patients" | "visits"; id: string; status: "accepted" | "rejected"; code?: string; message?: string }[] }> {
   const res = await fetchWithTimeout(`${API_URL}/api/sync`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },

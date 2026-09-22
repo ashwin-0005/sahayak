@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Download, Lock, RotateCcw, ShieldCheck, Trash2 } from "lucide-react";
+import { AlertTriangle, Download, Lock, RotateCcw, ShieldCheck, Trash2 } from "lucide-react";
 import { PageShell } from "../components/PageShell";
 import { BigButton } from "../components/BigButton";
 import { SyncStatus } from "../components/SyncStatus";
 import { getSession, lockApp, deleteSession } from "../auth/auth";
-import { getAllPatients, resetLocalData } from "../db/repo";
+import { clearQuarantine, discardQuarantine, getAllPatients, getPatient, getQuarantine, resetLocalData } from "../db/repo";
 import { setLanguage, type UILang } from "../i18n";
 import type { Session } from "../auth/auth";
+import type { QuarantineEntry } from "../types";
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation();
@@ -18,11 +19,33 @@ export default function SettingsPage() {
   const [confirming, setConfirming] = useState(false);
   const [installEvt, setInstallEvt] = useState<Event | null>(null);
   const [ready, setReady] = useState(false);
+  const [quarantine, setQuarantine] = useState<QuarantineEntry[]>([]);
+  const [quarantineNames, setQuarantineNames] = useState<Record<number, string>>({});
+
+  const reloadQuarantine = async (): Promise<void> => {
+    const rows = await getQuarantine();
+    setQuarantine(rows);
+    const names: Record<number, string> = {};
+    for (const q of rows) {
+      if (q.id === undefined) continue;
+      const rec = (q.record ?? {}) as { name?: unknown; id?: unknown; patient_id?: unknown };
+      if (typeof rec.name === "string" && rec.name) {
+        names[q.id] = rec.name;
+      } else if (typeof rec.patient_id === "string") {
+        const p = await getPatient(rec.patient_id);
+        names[q.id] = p ? p.name : String(rec.id ?? rec.patient_id);
+      } else {
+        names[q.id] = String(rec.id ?? q.code);
+      }
+    }
+    setQuarantineNames(names);
+  };
 
   useEffect(() => {
     void (async () => {
       setSession(await getSession());
       setPatientCount((await getAllPatients()).length);
+      await reloadQuarantine();
       setReady(true);
     })();
     const onInstall = (e: Event) => {
@@ -96,6 +119,48 @@ export default function SettingsPage() {
           {t("settings.disclaimer")}
         </p>
       </div>
+
+      {quarantine.length > 0 ? (
+        <section aria-label={t("settings.syncIssuesTitle")} className="mt-4 card rail-urgent">
+          <p className="flex items-center gap-2 text-body font-bold text-ink">
+            <AlertTriangle className="size-5 text-urgent" aria-hidden="true" />
+            {t("settings.syncIssuesTitle")}
+          </p>
+          <p className="mt-1 text-base text-neem-dark">
+            {quarantine.length === 1
+              ? t("settings.syncIssuesBodyOne")
+              : t("settings.syncIssuesBody", { count: quarantine.length })}
+          </p>
+          <ul className="mt-3 flex flex-col gap-2">
+            {quarantine.map((q) => (
+              <li key={q.id} className="flex items-center justify-between gap-3 rounded-button bg-mist px-3 py-2">
+                <div className="min-w-0">
+                  <p className="truncate text-body font-bold text-ink">
+                    {q.id !== undefined ? quarantineNames[q.id] ?? q.code : q.code}
+                  </p>
+                  <p className="text-base text-neem-dark">
+                    {q.code} · {q.message}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="min-h-[48px] shrink-0 px-3 text-body font-bold text-urgent"
+                  onClick={() => void (q.id !== undefined ? discardQuarantine(q.id).then(() => void reloadQuarantine()) : Promise.resolve())}
+                >
+                  {t("settings.discard")}
+                </button>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            className="mt-3 min-h-[48px] w-full rounded-button bg-mist text-body font-bold text-neem-dark"
+            onClick={() => void clearQuarantine().then(() => void reloadQuarantine())}
+          >
+            {t("settings.discardAll")}
+          </button>
+        </section>
+      ) : null}
 
       <div className="mt-4 flex flex-col gap-3">
         {installEvt ? (

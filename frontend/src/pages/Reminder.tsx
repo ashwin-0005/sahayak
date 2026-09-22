@@ -87,11 +87,15 @@ export default function ReminderPage() {
     setToast(true);
   };
 
+  // WhatsApp/SMS addressing needs digits only — a stored "+91 98765 00000"
+  // would otherwise produce a dead link (backend strips the same way).
+  const phoneDigits = (patient?.phone ?? "").replace(/\D/g, "");
+
   const shareWa = () =>
-    window.open(`https://wa.me/${patient.phone}?text=${encodeURIComponent(message)}`, "_blank", "noopener");
+    window.open(`https://wa.me/${phoneDigits}?text=${encodeURIComponent(message)}`, "_blank", "noopener");
 
   const shareSms = () => {
-    window.location.href = `sms:${patient.phone}?body=${encodeURIComponent(message)}`;
+    window.location.href = `sms:${phoneDigits}?body=${encodeURIComponent(message)}`;
   };
 
   return (
@@ -152,6 +156,8 @@ export default function ReminderPage() {
           {t("reminder.sendSms")}
         </BigButton>
       </div>
+
+      <p className="mt-4 text-base text-neem-dark">{t("settings.disclaimer")}</p>
 
       {toast ? <Toast message={t("reminder.copied")} onDone={() => setToast(false)} /> : null}
     </PageShell>

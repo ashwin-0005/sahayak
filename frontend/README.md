@@ -27,8 +27,10 @@ npm run typecheck  # tsc --noEmit
 - **Dexie** is the single source of truth on-device (patients, visits, outbox, meta).
   Patient/visit rows keep the backend's **snake_case** shape, so sync maps 1:1.
 - **Outbox**: every local write (new patient, visit, visit roll-forward) enqueues a
-  JSON snapshot (worker_id stripped). Push happens once per sync; the outbox is
-  **cleared only after the server acknowledges**.
+  JSON snapshot (worker_id stripped). Push happens once per sync; the server
+  acknowledges **per record**, and only acked rows are removed from the outbox.
+  Rejected or corrupt rows move to a visible **quarantine** list ("Sync issues")
+  instead of blocking or vanishing.
 - **Sync** (`src/sync/syncEngine.ts`): one `syncNow()` entry point, guarded against
   concurrency. Triggers: app start (+800ms), `online` event, 60s interval, and the
   manual "Sync now" buttons. Exponential backoff 5s → 5min cap. Last-write-wins on
@@ -40,7 +42,7 @@ npm run typecheck  # tsc --noEmit
   is set only after the worker confirms.
 
 ## Routes
-- `/login` · `/` (home + due list) · `/patients` · `/patients/new`
+- `/` (landing, public) · `/login` · `/home` (dashboard + due list) · `/patients` · `/patients/new`
 - `/patients/:id` · `/visits/:patientId/new` · `/risk/result` · `/reminders/:patientId` · `/settings`
 
 ## Tests
@@ -51,14 +53,18 @@ npm run typecheck  # tsc --noEmit
   survives rejection, meta timestamps.
 - `src/i18n/keys.test.ts` — en/hi key parity.
 - `src/pages/PatientNew.test.tsx` — consent gate blocks/permits saving.
+- `src/pages/Login.test.tsx` + `src/pages/Home.test.tsx` — cold-start wake
+  notice, cache-first render.
+- `src/lib/retry.test.ts` + `src/lib/useSlow.test.ts` — retry/backoff helpers.
 
 Use `fake-indexeddb` (already configured in `vitest.setup.ts`).
 
 ## Assumptions
-- **WhatsApp reminder**: `wa.me` link uses the phone digits exactly as stored
-  (matches the backend; no `+91` prefix rewriting).
-- **"Reset demo data"** (Settings) wipes only local Dexie data; sync-mirrored data
-  on the server is untouched. It does not log you out.
+- **WhatsApp reminder**: `wa.me` link uses digits-only phone (non-digits
+  stripped); the backend does the same.
+- **"Reset demo data"** (Settings) wipes local Dexie data **and** resets sync
+  state so the next sync re-pulls everything; sync-mirrored data on the server
+  is untouched. **"Log out"** wipes all local data including the session.
 - **Offline verification** is done via the production build + Workbox precache
   inspection (a CLI cannot toggle airplane mode), i.e. `npm run build && npm run preview`.
 - Risk thresholds are demo values; they must be validated against national

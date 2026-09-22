@@ -1,13 +1,16 @@
 import { postSync } from "../lib/api";
 import {
+  addToQuarantine,
   applyPatientFromServer,
   applyVisitFromServer,
-  clearOutbox,
+  deleteOutboxRows,
   getMeta,
   getPendingOutbox,
+  LAST_PULLED_AT_KEY,
+  LAST_SYNC_AT_KEY,
   setMeta
 } from "../db/repo";
-import type { Patient, SyncStatus, Visit } from "../types";
+import type { Patient, RecordResult, SyncStatus, Visit } from "../types";
 
 // JSON-string fields the backend returns (SQLite TEXT columns).
 function parseServerPatient(row: Record<string, unknown>): Patient {
@@ -68,7 +71,7 @@ export function subscribeSync(cb: Listener): () => void {
 
 async function refreshPending(): Promise<void> {
   pending = (await getPendingOutbox()).length;
-  lastSyncedAt = (await getMeta("lastSyncAt")) as string | null;
+  lastSyncedAt = (await getMeta(LAST_SYNC_AT_KEY)) as string | null;
   emit();
 }
 
@@ -98,27 +101,50 @@ export async function syncNow(): Promise<boolean> {
   emit();
 
   try {
-    const lastPulledAt = (await getMeta("lastPulledAt")) as string | null;
+    const lastPulledAt = (await getMeta(LAST_PULLED_AT_KEY)) as string | null;
     const pendingRows = await getPendingOutbox();
     const patients: unknown[] = [];
     const visits: unknown[] = [];
+    // Outbox row id -> record id, so we can ack precisely per row.
+    const rowIds = new Map<string, number[]>();
+    const track = (table: string, recordId: unknown, rowId: number | undefined): void => {
+      if (typeof recordId !== "string" || rowId === undefined) return;
+      const list = rowIds.get(`${table}:${recordId}`) ?? [];
+      list.push(rowId);
+      rowIds.set(`${table}:${recordId}`, list);
+    };
     for (const row of pendingRows) {
-      let parsed: unknown = null;
+      let parsed: { id?: unknown } | null = null;
       try {
-        parsed = JSON.parse(row.record);
+        parsed = JSON.parse(row.record) as { id?: unknown };
       } catch {
+        // Corrupt locally — quarantine it for review instead of silently
+        // dropping it (it would previously vanish in clearOutbox()).
+        await addToQuarantine({
+          table: row.table,
+          record: { _raw: row.record },
+          code: "CORRUPT_RECORD",
+          message: "This record was damaged on the device and could not be read.",
+          created_at: new Date().toISOString()
+        });
+        if (row.id !== undefined) await deleteOutboxRows([row.id]);
         continue;
       }
-      if (row.table === "patients") patients.push(parsed);
-      else if (row.table === "visits") visits.push(parsed);
+      if (row.table === "patients") {
+        patients.push(parsed);
+        track("patients", parsed?.id, row.id);
+      } else if (row.table === "visits") {
+        visits.push(parsed);
+        track("visits", parsed?.id, row.id);
+      }
     }
 
     const res = await postSync(token, { lastPulledAt, patients, visits });
 
     await applyServerPayload(res.patients, res.visits);
-    await clearOutbox();
-    await setMeta("lastPulledAt", res.serverTime);
-    await setMeta("lastSyncAt", new Date().toISOString());
+    await applySyncResults(res.results ?? [], rowIds);
+    await setMeta(LAST_PULLED_AT_KEY, res.serverTime);
+    await setMeta(LAST_SYNC_AT_KEY, new Date().toISOString());
 
     if (id !== syncId) return false; // a newer call took over
     backoffMs = 5000;
@@ -160,6 +186,42 @@ async function applyServerPayload(
   for (const row of serverVisits) {
     await applyVisitFromServer(parseServerVisit(row));
   }
+}
+
+// Per-record acknowledgement: delete acked rows, quarantine rejected ones
+// (with the server's reason) so a single bad record can never block or
+// silently lose the rest of the queue.
+async function applySyncResults(results: RecordResult[], rowIds: Map<string, number[]>): Promise<void> {
+  const pending = await getPendingOutbox();
+  const byRowId = new Map(pending.map((p) => [p.id, p]));
+  const acked: number[] = [];
+  for (const r of results) {
+    const ids = rowIds.get(`${r.table}:${r.id}`) ?? [];
+    if (r.status === "accepted") {
+      acked.push(...ids);
+    } else {
+      for (const rowId of ids) {
+        const row = byRowId.get(rowId);
+        let record: unknown = { id: r.id };
+        if (row) {
+          try {
+            record = JSON.parse(row.record) as unknown;
+          } catch {
+            record = { _raw: row.record };
+          }
+          await deleteOutboxRows([rowId]);
+        }
+        await addToQuarantine({
+          table: r.table,
+          record,
+          code: r.code ?? "REJECTED",
+          message: r.message ?? "The server did not accept this record.",
+          created_at: new Date().toISOString()
+        });
+      }
+    }
+  }
+  await deleteOutboxRows(acked);
 }
 
 export async function initSyncEngine(): Promise<void> {

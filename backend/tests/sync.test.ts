@@ -54,6 +54,20 @@ describe("sync", () => {
     seedWorker("w2", "5678", "Asha Two", "VillageB");
   });
 
+  // The login rate limiter (10/15min per IP) is shared across this file, so
+  // reuse one token per worker. Tokens stay valid: every test reseeds the
+  // same ids/pins under the same JWT secret.
+  const tokenCache = new Map<string, string>();
+  async function tokenFor(workerId: string, pin: string): Promise<string> {
+    const key = `${workerId}:${pin}`;
+    let t = tokenCache.get(key);
+    if (!t) {
+      t = (await request(app).post("/api/auth/login").send({ workerId, pin })).body.token as string;
+      tokenCache.set(key, t);
+    }
+    return t;
+  }
+
   it("login works and rejects bad pin", async () => {
     const ok = await request(app).post("/api/auth/login").send({ workerId: "w1", pin: "1234" });
     expect(ok.status).toBe(200);
@@ -63,8 +77,7 @@ describe("sync", () => {
   });
 
   it("sync upserts + is idempotent on replay", async () => {
-    const login = await request(app).post("/api/auth/login").send({ workerId: "w1", pin: "1234" });
-    const token = login.body.token;
+    const token = await tokenFor("w1", "1234");
     const pid = "11111111-1111-4111-8111-111111111111";
     const vid = "22222222-2222-4222-8222-222222222222";
     const payload = {
@@ -75,6 +88,7 @@ describe("sync", () => {
     const r1 = await request(app).post("/api/sync").set("Authorization", `Bearer ${token}`).send(payload);
     expect(r1.status).toBe(200);
     expect(r1.body.patients.length).toBeGreaterThanOrEqual(1);
+    expect((r1.body.results as { status: string }[]).every((x) => x.status === "accepted")).toBe(true);
     const count1 = (getDb().prepare("SELECT COUNT(*) c FROM visits").get() as { c: number }).c;
     const r2 = await request(app).post("/api/sync").set("Authorization", `Bearer ${token}`).send(payload);
     expect(r2.status).toBe(200);
@@ -83,8 +97,7 @@ describe("sync", () => {
   });
 
   it("older record is ignored (last-write-wins)", async () => {
-    const login = await request(app).post("/api/auth/login").send({ workerId: "w1", pin: "1234" });
-    const token = login.body.token;
+    const token = await tokenFor("w1", "1234");
     const pid = "33333333-3333-4333-8333-333333333333";
     const newer = patient(pid, { name: "New Name", updated_at: "2026-09-21T10:00:00.000Z", created_at: "2026-09-21T10:00:00.000Z" });
     const older = patient(pid, { name: "Old Name", updated_at: "2026-09-20T10:00:00.000Z", created_at: "2026-09-20T10:00:00.000Z" });
@@ -96,21 +109,78 @@ describe("sync", () => {
     expect(row.name).toBe("New Name");
   });
 
-  it("missing consent is rejected", async () => {
-    const login = await request(app).post("/api/auth/login").send({ workerId: "w1", pin: "1234" });
-    const token = login.body.token;
-    const pid = "44444444-4444-4444-8444-444444444444";
+  it("equal timestamps converge on the server row (documented tiebreak)", async () => {
+    const token = await tokenFor("w1", "1234");
+    const pid = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+    const ts = "2026-09-21T10:00:00.000Z";
+    await request(app).post("/api/sync").set("Authorization", `Bearer ${token}`).send({
+      lastPulledAt: null, patients: [patient(pid, { name: "Server Name", updated_at: ts, created_at: ts })], visits: [],
+    });
+    const r = await request(app).post("/api/sync").set("Authorization", `Bearer ${token}`).send({
+      lastPulledAt: null, patients: [patient(pid, { name: "Client Tie", updated_at: ts, created_at: ts })], visits: [],
+    });
+    expect(r.status).toBe(200);
+    expect(r.body.results[0].status).toBe("accepted");
+    const row = getDb().prepare("SELECT name FROM patients WHERE id=?").get(pid) as { name: string };
+    expect(row.name).toBe("Server Name");
+  });
+
+  it("missing consent is rejected per record without blocking the batch", async () => {
+    const token = await tokenFor("w1", "1234");
+    const badPid = "44444444-4444-4444-8444-444444444444";
+    const goodPid = "44444444-4444-4444-8444-444444444445";
     const r = await request(app)
       .post("/api/sync")
       .set("Authorization", `Bearer ${token}`)
-      .send({ lastPulledAt: null, patients: [patient(pid, { consent_given: 0 })], visits: [] });
-    expect(r.status).toBe(400);
-    expect(r.body.error.code).toBe("CONSENT_REQUIRED");
+      .send({ lastPulledAt: null, patients: [patient(badPid, { consent_given: 0 }), patient(goodPid)], visits: [] });
+    expect(r.status).toBe(200);
+    const byId = Object.fromEntries((r.body.results as { id: string; status: string; code?: string }[]).map((x) => [x.id, x]));
+    expect(byId[badPid].status).toBe("rejected");
+    expect(byId[badPid].code).toBe("CONSENT_REQUIRED");
+    expect(byId[goodPid].status).toBe("accepted");
+    const row = getDb().prepare("SELECT id FROM patients WHERE id=?").get(goodPid);
+    expect(row).toBeTruthy();
+    const missing = getDb().prepare("SELECT id FROM patients WHERE id=?").get(badPid);
+    expect(missing).toBeFalsy();
+  });
+
+  it("absurd timestamps are rejected per record", async () => {
+    const token = await tokenFor("w1", "1234");
+    const pid = "88888888-8888-4888-8888-888888888888";
+    const r = await request(app)
+      .post("/api/sync")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ lastPulledAt: null, patients: [patient(pid, { updated_at: "2099-01-01T00:00:00.000Z" })], visits: [] });
+    expect(r.status).toBe(200);
+    expect(r.body.results[0].status).toBe("rejected");
+    expect(r.body.results[0].code).toBe("INVALID_TIMESTAMP");
+  });
+
+  it("cross-worker and unknown-patient writes are rejected per record", async () => {
+    const t1 = await tokenFor("w1", "1234");
+    const t2 = await tokenFor("w2", "5678");
+    const pid = "99999999-9999-4999-8999-999999999999";
+    await request(app).post("/api/sync").set("Authorization", `Bearer ${t1}`).send({ lastPulledAt: null, patients: [patient(pid)], visits: [] });
+    const vid = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+    const r = await request(app)
+      .post("/api/sync")
+      .set("Authorization", `Bearer ${t2}`)
+      .send({
+        lastPulledAt: null,
+        patients: [patient(pid, { name: "Hijack" })],
+        visits: [visit(vid, "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb")],
+      });
+    expect(r.status).toBe(200);
+    const byId = Object.fromEntries((r.body.results as { id: string; status: string; code?: string }[]).map((x) => [x.id, x]));
+    expect(byId[pid].status).toBe("rejected");
+    expect(byId[pid].code).toBe("FORBIDDEN");
+    expect(byId[vid].status).toBe("rejected");
+    expect(byId[vid].code).toBe("UNKNOWN_PATIENT");
   });
 
   it("one worker cannot read another's data", async () => {
-    const t1 = (await request(app).post("/api/auth/login").send({ workerId: "w1", pin: "1234" })).body.token;
-    const t2 = (await request(app).post("/api/auth/login").send({ workerId: "w2", pin: "5678" })).body.token;
+    const t1 = await tokenFor("w1", "1234");
+    const t2 = await tokenFor("w2", "5678");
     const pid = "55555555-5555-4555-8555-555555555555";
     await request(app).post("/api/sync").set("Authorization", `Bearer ${t1}`).send({ lastPulledAt: null, patients: [patient(pid)], visits: [] });
     const r = await request(app).get(`/api/patients/${pid}`).set("Authorization", `Bearer ${t2}`);
@@ -120,8 +190,7 @@ describe("sync", () => {
   });
 
   it("server overrides client-supplied risk", async () => {
-    const login = await request(app).post("/api/auth/login").send({ workerId: "w1", pin: "1234" });
-    const token = login.body.token;
+    const token = await tokenFor("w1", "1234");
     const pid = "66666666-6666-4666-8666-666666666666";
     const vid = "77777777-7777-4777-8777-777777777777";
     await request(app).post("/api/sync").set("Authorization", `Bearer ${token}`).send({

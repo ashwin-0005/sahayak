@@ -115,6 +115,7 @@ export default function RiskResultPage() {
         <p className="mt-2 text-body text-neem-dark">
           {t("risk.nextVisit")}: {patient.next_visit_date ? formatDate(patient.next_visit_date, lng) : "—"}
         </p>
+        <p className="mt-2 text-base text-neem-dark">{t("settings.disclaimer")}</p>
       </div>
 
       <div className="mt-4 flex flex-col gap-3">

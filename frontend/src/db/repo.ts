@@ -1,5 +1,5 @@
 import { db } from "./db.js";
-import type { Patient, Visit } from "../types";
+import type { Patient, QuarantineEntry, Visit } from "../types";
 import { newId } from "../lib/ids";
 
 const nowIso = (): string => new Date().toISOString();
@@ -122,6 +122,34 @@ export async function clearOutbox(): Promise<void> {
   await db.outbox.clear();
 }
 
+// Remove only the outbox rows the server acknowledged (by row id). Anything
+// else stays queued for the next attempt.
+export async function deleteOutboxRows(ids: number[]): Promise<void> {
+  if (ids.length === 0) return;
+  await db.outbox.bulkDelete(ids);
+}
+
+// --- quarantine --------------------------------------------------------------
+// Records the server refused, or that were corrupt locally. Surfaced in
+// Settings ("Sync issues") with the server's reason; the worker discards
+// them explicitly once reviewed.
+
+export async function getQuarantine(): Promise<QuarantineEntry[]> {
+  return db.quarantine.orderBy("id").toArray();
+}
+
+export async function addToQuarantine(entry: Omit<QuarantineEntry, "id">): Promise<void> {
+  await db.quarantine.add(entry as QuarantineEntry);
+}
+
+export async function discardQuarantine(id: number): Promise<void> {
+  await db.quarantine.delete(id);
+}
+
+export async function clearQuarantine(): Promise<void> {
+  await db.quarantine.clear();
+}
+
 // --- meta ------------------------------------------------------------------
 
 export async function getMeta(key: string): Promise<unknown> {
@@ -139,12 +167,32 @@ export async function deleteMeta(key: string): Promise<void> {
 
 // --- maintenance -----------------------------------------------------------
 
-// Reset demo data: wipe local clinical data, keep meta (token/worker/pin).
+export const LAST_PULLED_AT_KEY = "lastPulledAt";
+export const LAST_SYNC_AT_KEY = "lastSyncAt";
+
+// Reset demo data: wipe local clinical data + quarantine, keep the session,
+// but drop sync cursors so the next sync re-pulls everything from the server.
+// (Keeping stale cursors would leave the register permanently empty.)
 export async function resetLocalData(): Promise<void> {
-  await db.transaction("rw", db.patients, db.visits, db.outbox, async () => {
+  await db.transaction("rw", db.patients, db.visits, db.outbox, db.quarantine, db.meta, async () => {
     await db.patients.clear();
     await db.visits.clear();
     await db.outbox.clear();
+    await db.quarantine.clear();
+    await db.meta.delete(LAST_PULLED_AT_KEY);
+    await db.meta.delete(LAST_SYNC_AT_KEY);
+  });
+}
+
+// Log out: wipe EVERYTHING, including session token, PIN hash, and sync
+// state. Nothing patient-related may survive a device handover.
+export async function wipeAllLocalData(): Promise<void> {
+  await db.transaction("rw", db.patients, db.visits, db.outbox, db.quarantine, db.meta, async () => {
+    await db.patients.clear();
+    await db.visits.clear();
+    await db.outbox.clear();
+    await db.quarantine.clear();
+    await db.meta.clear();
   });
 }
 

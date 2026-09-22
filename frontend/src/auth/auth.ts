@@ -1,4 +1,4 @@
-import { getMeta, setMeta, deleteMeta } from "../db/repo";
+import { getMeta, setMeta, wipeAllLocalData } from "../db/repo";
 import { postLogin, ApiErrorClass } from "../lib/api";
 import type { Worker } from "../types";
 
@@ -66,8 +66,8 @@ export async function setToken(token: string): Promise<void> {
   await setMeta(AUTH_KEY, { ...session, token });
 }
 
-// Log out of this device: drop the session and the offline PIN hash.
+// Log out of this device: wipe everything — patients, visits, outbox,
+// quarantine, session token, and PIN hash. Nothing may survive handover.
 export async function deleteSession(): Promise<void> {
-  await deleteMeta(AUTH_KEY);
-  await setMeta(LOCKED_KEY, true);
+  await wipeAllLocalData();
 }

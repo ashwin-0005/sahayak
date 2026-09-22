@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { db } from "../db/db.js";
-import { createPatient, getAllPatients, getPendingOutbox, getVisitsForPatient, setMeta } from "../db/repo";
+import { createPatient, getAllPatients, getPendingOutbox, getQuarantine, getVisitsForPatient, setMeta } from "../db/repo";
 import { newId } from "../lib/ids";
 import { syncNow } from "./syncEngine";
 import type { Patient, Visit } from "../types";
@@ -29,10 +29,11 @@ function makePatient(): Patient {
 let fetchMock: ReturnType<typeof vi.fn>;
 
 beforeEach(async () => {
-  await db.transaction("rw", db.patients, db.visits, db.outbox, db.meta, async () => {
+  await db.transaction("rw", db.patients, db.visits, db.outbox, db.quarantine, db.meta, async () => {
     await db.patients.clear();
     await db.visits.clear();
     await db.outbox.clear();
+    await db.quarantine.clear();
     await db.meta.clear();
   });
   Object.defineProperty(navigator, "onLine", { configurable: true, value: true });
@@ -60,7 +61,8 @@ describe("syncEngine: push, apply, and clear on success", () => {
       json: async () => ({
         patients: [serverPatient],
         visits: [],
-        serverTime: "2099-01-01T00:00:00.000Z"
+        serverTime: "2099-01-01T00:00:00.000Z",
+        results: [{ table: "patients", id: localPatient.id, status: "accepted" }]
       })
     });
 
@@ -112,7 +114,12 @@ describe("syncEngine: push, apply, and clear on success", () => {
 
     fetchMock.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ patients: [], visits: [serverVisit], serverTime: "2099-01-01T08:00:00.000Z" })
+      json: async () => ({
+        patients: [],
+        visits: [serverVisit],
+        serverTime: "2099-01-01T08:00:00.000Z",
+        results: [{ table: "patients", id: localPatient.id, status: "accepted" }]
+      })
     });
 
     expect(await syncNow()).toBe(true);
@@ -136,5 +143,53 @@ describe("syncEngine: push, apply, and clear on success", () => {
     const ok = await syncNow();
     expect(ok).toBe(false);
     expect(await getPendingOutbox()).toHaveLength(1);
+  });
+
+  it("quarantines rejected rows with the server reason and acks the rest", async () => {
+    const good = makePatient();
+    const bad = makePatient();
+    await createPatient(good);
+    await createPatient(bad);
+
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        patients: [],
+        visits: [],
+        serverTime: "2099-01-01T00:00:00.000Z",
+        results: [
+          { table: "patients", id: good.id, status: "accepted" },
+          { table: "patients", id: bad.id, status: "rejected", code: "CONSENT_REQUIRED", message: "consent_given must be true" }
+        ]
+      })
+    });
+
+    expect(await syncNow()).toBe(true);
+
+    // Accepted row left the outbox; rejected row moved to quarantine.
+    expect(await getPendingOutbox()).toHaveLength(0);
+    const q = await getQuarantine();
+    expect(q).toHaveLength(1);
+    expect(q[0].table).toBe("patients");
+    expect(q[0].code).toBe("CONSENT_REQUIRED");
+    expect((q[0].record as { id: string }).id).toBe(bad.id);
+  });
+
+  it("quarantines corrupt outbox rows instead of deleting them silently", async () => {
+    await createPatient(makePatient());
+    await db.outbox.add({ table: "patients", record: "{not-json", created_at: new Date().toISOString() });
+
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ patients: [], visits: [], serverTime: "2099-01-01T00:00:00.000Z", results: [] })
+    });
+
+    // No results for the corrupt row (it was never sent); the valid patient
+    // row has no ack either, so it stays queued.
+    expect(await syncNow()).toBe(true);
+    expect(await getPendingOutbox()).toHaveLength(1);
+    const q = await getQuarantine();
+    expect(q).toHaveLength(1);
+    expect(q[0].code).toBe("CORRUPT_RECORD");
   });
 });

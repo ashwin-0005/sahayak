@@ -4,9 +4,10 @@ node_modules/
 # Build output
 dist/
 
-# Environment files (never commit secrets)
+# Environment files (never commit secrets; examples are tracked explicitly)
 .env
 .env.*
+!.env.example
 
 # Backend SQLite database files
 backend/data/
@@ -14,4 +15,9 @@ backend/data/
 # Test artifacts
 *.test.db
 *.test.db-journal
+*.db-wal
+*.db-shm
 coverage/
+
+# TypeScript build info (regenerated on every build)
+*.tsbuildinfo
