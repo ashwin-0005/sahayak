@@ -101,6 +101,7 @@
     "noTrend": "No recent readings yet",
     "visitsTitle": "Visits",
     "noVisits": "No visits recorded yet",
+    "noVisitsBody": "Log the first visit to start tracking",
     "conditionLabel": "Condition",
     "lastRisk": "Last risk",
     "bp": "BP",

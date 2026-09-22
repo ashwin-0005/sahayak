@@ -5,6 +5,7 @@ import { PageShell } from "../components/PageShell";
 import { SyncStatus } from "../components/SyncStatus";
 import { PatientCard } from "../components/PatientCard";
 import { EmptyState } from "../components/EmptyState";
+import { DueListSkeleton, SummaryCardSkeleton } from "../components/Skeleton";
 import { getSession } from "../auth/auth";
 import { getAllPatients, getVisitsForPatient } from "../db/repo";
 import { dueNow, lastRisk, overdueDays } from "../lib/records";
@@ -55,9 +56,32 @@ export default function HomePage() {
   if (!loaded) {
     return (
       <PageShell>
-        <p role="status" className="mt-10 text-center text-body text-neem-dark">
-          {t("common.loading")}
-        </p>
+        <header className="flex items-center justify-between">
+          <div>
+            <h1 className="text-page font-extrabold text-ink">
+              {t("home.greeting", { name: session?.worker.name ?? "" })}
+            </h1>
+            <p className="text-body text-neem-dark">{todayUTC()}</p>
+          </div>
+          <UserRound className="size-9 text-neem" aria-hidden="true" />
+        </header>
+
+        <div className="mt-4">
+          <SyncStatus onSynced={() => void load()} />
+        </div>
+
+        <section className="mt-5 grid grid-cols-3 gap-3" aria-label={t("a11y.summary")}>
+          <SummaryCardSkeleton />
+          <SummaryCardSkeleton />
+          <SummaryCardSkeleton />
+        </section>
+
+        <section className="mt-6" aria-label={t("home.dueListTitle")}>
+          <h2 className="text-section font-extrabold">{t("home.dueListTitle")}</h2>
+          <div className="mt-3 flex flex-col gap-3">
+            <DueListSkeleton count={3} />
+          </div>
+        </section>
       </PageShell>
     );
   }

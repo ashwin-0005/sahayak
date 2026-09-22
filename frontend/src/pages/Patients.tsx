@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { PageShell } from "../components/PageShell";
 import { PatientCard } from "../components/PatientCard";
 import { EmptyState } from "../components/EmptyState";
+import { PatientListSkeleton } from "../components/Skeleton";
 import { getAllPatients, getVisitsForPatient } from "../db/repo";
 import { lastRisk } from "../lib/records";
 import type { Condition, Patient, Visit } from "../types";
@@ -47,9 +48,36 @@ export default function PatientsPage() {
   if (!loaded) {
     return (
       <PageShell>
-        <p role="status" className="mt-10 text-center text-body text-neem-dark">
-          {t("common.loading")}
-        </p>
+        <h1 className="text-page font-extrabold">{t("patients.title")}</h1>
+
+        <label className="mt-4 flex min-h-[56px] items-center gap-2 rounded-button border border-mist bg-white px-4">
+          <Search className="size-5 text-neem" aria-hidden="true" />
+          <span className="sr-only">{t("patients.search")}</span>
+          <input
+            className="w-full bg-transparent outline-none"
+            placeholder={t("patients.searchPlaceholder")}
+            disabled
+          />
+        </label>
+
+        <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Condition filter">
+          {FILTERS.map((c) => (
+            <button
+              key={c}
+              type="button"
+              disabled
+              className={`tag opacity-50 ${
+                filter === c ? "bg-neem text-white" : "bg-mist text-neem-dark"
+              }`}
+            >
+              {c === "all" ? t("patients.allConditions") : t(`condition.${c}`)}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-4 flex flex-col gap-3">
+          <PatientListSkeleton count={4} />
+        </div>
       </PageShell>
     );
   }

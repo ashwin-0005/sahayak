@@ -10,7 +10,7 @@ export default {
         "neem-dark": "#0F4433",
         mist: "#DDE9E2",
         urgent: "#C62828",
-        clinic: "#E08A00",
+        clinic: "#B45309",
         home: "#2E7D32"
       },
       fontFamily: {

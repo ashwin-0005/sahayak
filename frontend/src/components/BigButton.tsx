@@ -15,7 +15,7 @@ const VARIANTS: Record<string, string> = {
   primary: "btn-primary",
   secondary: "btn-secondary",
   ghost: "btn-ghost",
-  danger: "btn bg-urgent text-white active:scale-[0.98]"
+  danger: "btn bg-urgent text-white"
 };
 
 export function BigButton({
@@ -30,7 +30,7 @@ export function BigButton({
   return (
     <button
       type={type}
-      className={`${VARIANTS[variant]} ${disabled ? "opacity-45" : ""} ${className}`}
+      className={`${VARIANTS[variant]} ${disabled ? "opacity-45" : ""} active:scale-[0.98] transition-transform duration-75 ${className}`}
       onClick={onClick}
       disabled={disabled}
     >

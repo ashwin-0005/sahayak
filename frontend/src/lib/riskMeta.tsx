@@ -10,7 +10,7 @@ export interface RiskMeta {
 
 export const RISK_META: Record<RiskLevel, RiskMeta> = {
   urgent: { color: "#C62828", bg: "#C62828", icon: AlertOctagon },
-  clinic: { color: "#E08A00", bg: "#E08A00", icon: Building2 },
+  clinic: { color: "#B45309", bg: "#B45309", icon: Building2 },
   home: { color: "#2E7D32", bg: "#2E7D32", icon: HeartPulse }
 };
 

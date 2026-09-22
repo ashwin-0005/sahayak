@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
-import { Bell, X, Plus, CalendarClock } from "lucide-react";
+import { CalendarPlus, Bell, X, Plus, CalendarClock } from "lucide-react";
 import {
   CartesianGrid,
   Legend,
@@ -165,7 +165,13 @@ export default function PatientDetailPage() {
         <h2 className="text-section font-extrabold">{t("detail.visitsTitle")}</h2>
         <div className="mt-3 flex flex-col gap-3">
           {visits.length === 0 ? (
-            <EmptyState icon={CalendarClock} title={t("detail.noVisits")} />
+            <EmptyState
+              icon={CalendarPlus}
+              title={t("detail.noVisits")}
+              body={t("detail.noVisitsBody")}
+              actionLabel={t("detail.logVisit")}
+              onAction={() => navigate(`/visits/${patient.id}/new`)}
+            />
           ) : (
             [...visits]
               .sort((a, b) => (a.visited_at < b.visited_at ? 1 : -1))
