@@ -33,7 +33,7 @@
     "error": "Incorrect worker ID or PIN.",
     "errorNetwork": "No connection. Checking saved PIN...",
     "unlockOffline": "You are offline. Enter your PIN to unlock.",
-    "waking": "Waking up the server — this can take up to a minute on first use.",
+    "waking": "Waking up the server, this can take up to a minute.",
     "timeoutError": "The server is taking too long. Please try again.",
     "languageLabel": "App language"
   },
@@ -227,5 +227,18 @@
     "decrease": "Decrease",
     "increase": "Increase",
     "delete": "Delete"
+  },
+  "landing": {
+    "title": "Sahayak",
+    "tagline": "Offline patient follow-up for community health workers",
+    "feature1": "Works completely offline — no internet needed in the field",
+    "feature2": "Tracks patients, visits, and risk with clinical rules",
+    "feature3": "Syncs automatically when back online",
+    "continue": "Continue to login",
+    "showDemo": "View demo credentials",
+    "hideDemo": "Hide demo credentials",
+    "demoTitle": "Demo credentials (seeded data)",
+    "worker1": "Worker 1: asha001 / 1234 (Meera Yadav, Sanwer)",
+    "worker2": "Worker 2: asha002 / 5678 (Sunita Patel, Depalpur)"
   }
 }

@@ -3,7 +3,11 @@ import { useTranslation } from "react-i18next";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { getSession, isLocked } from "./auth/auth";
 import { initSyncEngine } from "./sync/syncEngine";
+import { getHealth } from "./lib/api";
+import { withRetry } from "./lib/retry";
+import { WakeNotice } from "./components/WakeNotice";
 import LoginPage from "./pages/Login";
+import LandingPage from "./pages/Landing";
 import HomePage from "./pages/Home";
 import PatientsPage from "./pages/Patients";
 import PatientNewPage from "./pages/PatientNew";
@@ -20,6 +24,44 @@ function RouteFallback() {
     <p role="status" className="mt-10 text-center text-body text-neem-dark">
       {t("common.loading")}
     </p>
+  );
+}
+
+// Background cold-start probe: pings /api/health once at launch (3 attempts).
+// Cached Dexie data renders immediately regardless; this only drives a
+// non-blocking banner while a sleeping server wakes up.
+function ServerWakeBanner() {
+  const { pathname } = useLocation();
+  const [waking, setWaking] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const slowId = setTimeout(() => {
+      if (!cancelled) setWaking(true);
+    }, 2000);
+    void (async () => {
+      try {
+        await withRetry(() => getHealth(), { attempts: 3 });
+      } catch {
+        // Offline or unreachable — the app keeps working from cache.
+      } finally {
+        if (!cancelled) {
+          clearTimeout(slowId);
+          setWaking(false);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+      clearTimeout(slowId);
+    };
+  }, []);
+
+  if (pathname === "/login" || !waking) return null;
+  return (
+    <div className="mx-auto w-full max-w-[480px] px-4 pt-4">
+      <WakeNotice />
+    </div>
   );
 }
 
@@ -54,10 +96,14 @@ export default function App() {
   }, []);
 
   return (
-    <Routes>
+    <>
+      <ServerWakeBanner />
+      <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route
-        path="/"
+        path="/home"
         element={
           <RequireAuth>
             <HomePage />
@@ -124,5 +170,6 @@ export default function App() {
       />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </>
   );
 }

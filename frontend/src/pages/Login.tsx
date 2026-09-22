@@ -8,6 +8,8 @@ import { setLanguage, type UILang } from "../i18n";
 import { syncNow } from "../sync/syncEngine";
 import { ApiErrorClass } from "../lib/api";
 import { useSlowNotice } from "../lib/useSlow";
+import { withRetry } from "../lib/retry";
+import { WakeNotice } from "../components/WakeNotice";
 
 export default function LoginPage() {
   const { t, i18n } = useTranslation();
@@ -19,7 +21,7 @@ export default function LoginPage() {
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const slowLogin = useSlowNotice(busy);
+  const slowLogin = useSlowNotice(busy, 2000);
 
   const online = navigator.onLine;
 
@@ -31,7 +33,9 @@ export default function LoginPage() {
     setError(null);
     try {
       if (online) {
-        await loginOnline(workerId.trim(), pin);
+        // Cold starts can drop the first attempt; retry transient failures
+        // (never auth errors — a wrong PIN fails fast, once).
+        await withRetry(() => loginOnline(workerId.trim(), pin));
       } else {
         await unlockOffline(workerId.trim(), pin);
       }
@@ -107,9 +111,9 @@ export default function LoginPage() {
           {busy ? t("common.loading") : t("login.submit")}
         </BigButton>
         {busy && slowLogin ? (
-          <p role="status" className="mt-3 text-body text-neem-dark">
-            {t("login.waking")}
-          </p>
+          <div className="mt-3">
+            <WakeNotice />
+          </div>
         ) : null}
       </div>
     </div>

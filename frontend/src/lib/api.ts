@@ -65,3 +65,10 @@ export async function postSync(
   });
   return handle(res);
 }
+
+// Cold-start probe used on app launch. Shares the same timeout so a
+// sleeping free-tier server resolves (slowly) instead of hanging.
+export async function getHealth(): Promise<{ status: string; time: string }> {
+  const res = await fetchWithTimeout(`${API_URL}/api/health`, {});
+  return handle(res);
+}
