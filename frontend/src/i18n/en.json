@@ -6,6 +6,7 @@
   },
   "nav": {
     "home": "Today",
+    "insights": "Insights",
     "patients": "Patients",
     "add": "Add",
     "settings": "Settings"
@@ -86,6 +87,22 @@
     "errorBody": "Something went wrong on this device. Try again.",
     "seeAllPatients": "See all patients",
     "showingFirst": "Showing the first {{n}} — the rest are in Patients."
+  },
+  "insights": {
+    "title": "Insights",
+    "subtitle": "Care across your villages",
+    "patients": "Patients",
+    "villages": "Villages",
+    "dueNow": "Due for follow-up",
+    "visits7": "Visits last 7 days",
+    "visitsPerWeek": "Visits per week",
+    "weekRange": "Last {{n}} weeks",
+    "visitsLabel": "Visits",
+    "riskTitle": "Risk at last check-up",
+    "riskSummary": "Patients counted by their last check-up result.",
+    "unassessed": "No check-up yet",
+    "emptyTitle": "No data yet",
+    "emptyBody": "Register patients and log visits to see insights here."
   },
   "status": {
     "online": "Online",

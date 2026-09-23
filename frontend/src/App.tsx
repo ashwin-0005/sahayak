@@ -12,6 +12,7 @@ import LandingPage from "./pages/Landing";
 // stays lean on 2G and low-RAM devices. (PatientDetail carries recharts —
 // the largest chunk — and must stay out of the main bundle.)
 const HomePage = lazy(() => import("./pages/Home"));
+const InsightsPage = lazy(() => import("./pages/Insights"));
 const PatientsPage = lazy(() => import("./pages/Patients"));
 const PatientNewPage = lazy(() => import("./pages/PatientNew"));
 // recharts is heavy and used on one screen only — lazy so it stays out of the main chunk.
@@ -117,6 +118,16 @@ export default function App() {
           <RequireAuth>
             <Suspense fallback={<RouteFallback />}>
               <HomePage />
+            </Suspense>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/insights"
+        element={
+          <RequireAuth>
+            <Suspense fallback={<RouteFallback />}>
+              <InsightsPage />
             </Suspense>
           </RequireAuth>
         }

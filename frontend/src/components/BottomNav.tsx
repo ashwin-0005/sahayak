@@ -1,9 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Settings, SquarePlus, Users } from "lucide-react";
+import { ChartNoAxesColumn, Home, Settings, SquarePlus, Users } from "lucide-react";
 
 const NAV_ITEMS = [
   { to: "/home", key: "home", icon: Home, end: true },
+  { to: "/insights", key: "insights", icon: ChartNoAxesColumn, end: false },
   { to: "/patients", key: "patients", icon: Users, end: false },
   { to: "/patients/new", key: "add", icon: SquarePlus, end: false },
   { to: "/settings", key: "settings", icon: Settings, end: false }
@@ -22,7 +23,7 @@ export function BottomNav() {
       aria-label={t("a11y.navPrimary")}
       className="fixed inset-x-0 bottom-0 z-40 mx-auto h-16 max-w-[480px] border-t border-mist bg-paper"
     >
-      <ul className="grid h-full grid-cols-4">
+      <ul className="grid h-full grid-cols-5">
         {NAV_ITEMS.map(({ to, key, icon: Icon, end }) => (
           <li key={key}>
             <NavLink

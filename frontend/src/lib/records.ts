@@ -11,9 +11,9 @@ export function lastRisk(visits: Visit[], patientId: string): RiskLevel | null {
   return lastVisit(visits, patientId)?.risk_level ?? null;
 }
 
-export function overdueDays(patient: Patient): number | null {
+export function overdueDays(patient: Patient, asOf: string = todayUTC()): number | null {
   if (!patient.next_visit_date) return null;
-  return daysOverdue(patient.next_visit_date, todayUTC());
+  return daysOverdue(patient.next_visit_date, asOf);
 }
 
 export const RISK_RANK: Record<RiskLevel, number> = { urgent: 0, clinic: 1, home: 2 };
