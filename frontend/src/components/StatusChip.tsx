@@ -22,7 +22,7 @@ export function StatusChip({ status }: { status: SyncStatus }) {
     );
   if (status === "error")
     return (
-      <span className="chip bg-urgent text-white">
+      <span className="chip bg-danger text-white">
         <TriangleAlert className="size-4" aria-hidden="true" />
         {t("status.error")}
       </span>

@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-import { colorToken, fontSizeToken, radius, shadow } from "./src/theme/tokens";
+import { colorToken, fontSizeToken, radius, shadow, spacing } from "./src/theme/tokens";
 
 export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
@@ -18,7 +18,7 @@ export default {
         ...radius
       },
       spacing: {
-        "4.5": "18px"
+        ...spacing
       },
       boxShadow: {
         ...shadow

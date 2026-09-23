@@ -54,12 +54,13 @@
   .btn-ghost {
     @apply btn bg-transparent text-primary-dark;
   }
+  /* Pills: ONE primitive. `.tag`, `.badge` and `.chip` are deprecated aliases
+     that resolve to the same spec (kept so older screens compile unchanged). */
+  .pill,
   .tag,
-  .badge {
-    @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-base font-semibold;
-  }
+  .badge,
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-base font-bold;
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-base font-semibold;
   }
   .card {
     @apply rounded-card border border-mist bg-white p-4 shadow-card;
@@ -89,16 +90,16 @@
     @apply bg-mist/60;
   }
   .alert-danger {
-    @apply bg-urgent/10;
+    @apply bg-danger/10;
   }
   .alert-warning {
-    @apply bg-clinic/15;
+    @apply bg-warning/15;
   }
   .alert-info {
-    @apply bg-neem/10;
+    @apply bg-info/10;
   }
   .alert-success {
-    @apply bg-home/10;
+    @apply bg-success/10;
   }
   /* Bottom-sheet modal chrome. Shadow the Sheet component. */
   .sheet-overlay {
@@ -118,7 +119,7 @@
     border-left: 6px solid theme("colors.home");
   }
   .num-key {
-    @apply h-[64px] w-full rounded-button bg-white text-big font-extrabold text-ink border border-mist active:bg-mist;
+    @apply h-[64px] w-full rounded-button bg-white text-display font-extrabold text-ink border border-mist active:bg-mist;
   }
 }
 

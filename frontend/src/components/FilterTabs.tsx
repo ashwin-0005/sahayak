@@ -33,10 +33,10 @@ export function FilterTabs<K extends string>({ options, value, onChange, label }
                 : "text-neem-dark active:bg-white/70"
             }`}
           >
-            <span className={`text-section font-extrabold leading-none tabular-nums ${active ? "text-neem" : "text-ink"}`}>
+            <span className={`text-body font-extrabold leading-none tabular-nums ${active ? "text-neem" : "text-ink"}`}>
               {opt.count}
             </span>
-            <span className="text-sm font-bold leading-tight">{opt.label}</span>
+            <span className="text-support font-bold leading-tight">{opt.label}</span>
           </button>
         );
       })}

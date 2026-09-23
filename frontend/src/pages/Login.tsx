@@ -34,7 +34,7 @@ export default function LoginPage() {
   const lang = (i18n.language ?? "en").startsWith("hi") ? "hi" : "en";
 
   const submit = async () => {
-    if (!workerId.trim() || pin.length !== 4 || busy) return;
+    if (!workerId.trim() || pin.length < 4 || pin.length > 6 || busy) return;
     setBusy(true);
     setError(null);
     try {
@@ -104,14 +104,14 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-6">
-            <NumberPad value={pin} onChange={setPin} maxLength={4} label={t("login.pin")} id="pin" />
+            <NumberPad value={pin} onChange={setPin} maxLength={6} label={t("login.pin")} id="pin" />
           </div>
 
           {error ? <Alert tone="danger" role="alert" title={error} className="mt-3" /> : null}
 
         <BigButton
           className="mt-6"
-          disabled={!workerId.trim() || pin.length !== 4 || busy}
+          disabled={!workerId.trim() || pin.length < 4 || pin.length > 6 || busy}
           onClick={() => void submit()}
         >
           {busy ? t("common.loading") : t("login.submit")}

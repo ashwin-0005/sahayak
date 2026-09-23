@@ -11,14 +11,15 @@ interface BadgeProps {
 }
 
 // Tone is a tinted hint — the label text always carries the meaning, so no
-// status is ever conveyed by colour alone.
+// status is ever conveyed by colour alone. Tones use the decoupled SYSTEM
+// tokens; risk states render through RiskBadge with the risk palette instead.
 const TONE: Record<BadgeTone, string> = {
   neutral: "bg-mist text-neem-dark",
-  info: "bg-neem/15 text-neem-dark",
-  success: "bg-home/15 text-neem-dark",
-  warning: "bg-clinic/15 text-ink",
-  danger: "bg-urgent/15 text-urgent",
-  "danger-solid": "bg-urgent text-white"
+  info: "bg-info/15 text-neem-dark",
+  success: "bg-success/15 text-success",
+  warning: "bg-warning/15 text-ink",
+  danger: "bg-danger/15 text-danger",
+  "danger-solid": "bg-danger text-white"
 };
 
 export function Badge({ children, icon: Icon, tone = "neutral", className = "", role }: BadgeProps) {

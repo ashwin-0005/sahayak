@@ -1,4 +1,5 @@
 import type { ComponentType } from "react";
+import { Check } from "lucide-react";
 
 export type ToggleTone = "primary" | "success" | "danger";
 
@@ -22,10 +23,14 @@ type Props<V extends string> =
   | (Common<V> & { multiple?: false; value: V | null; onChange: (v: V) => void })
   | (Common<V> & { multiple: true; value: readonly V[]; onChange: (v: V[]) => void });
 
+// Selection is never conveyed by colour alone: the active option always gets
+// a check glyph too. Tones use the decoupled SYSTEM tokens (success/danger),
+// not the clinical risk palette — so picking "No" or a symptom is a form
+// state, never a risk verdict.
 const ACTIVE: Record<ToggleTone, string> = {
   primary: "bg-neem text-white",
-  success: "bg-home text-white",
-  danger: "bg-urgent text-white"
+  success: "bg-success text-white",
+  danger: "bg-danger text-white"
 };
 
 const COLS: Record<2 | 3 | 4, string> = {
@@ -88,6 +93,7 @@ export function ToggleGroup<V extends string>({
               }
             >
               {OptionIcon ? <OptionIcon className="size-5" aria-hidden="true" /> : null}
+              {active ? <Check className="size-5" aria-hidden="true" /> : null}
               <span>{opt.label}</span>
             </button>
           );

@@ -9,14 +9,15 @@ interface FieldProps {
 }
 
 // Label + control + optional hint/error. The label stays wired to the input
-// via htmlFor; the message line is announced when it changes.
+// via htmlFor; the message line is announced when it changes. Uses the token
+// control-gap between label and field.
 export function Field({ label, htmlFor, hint, error, children }: FieldProps) {
   return (
     <div>
       <label htmlFor={htmlFor} className="field-label">
         {label}
       </label>
-      <div className="mt-1">{children}</div>
+      <div className="mt-control">{children}</div>
       {error ? (
         <p id={`${htmlFor}-error`} role="alert" className="field-error">
           {error}

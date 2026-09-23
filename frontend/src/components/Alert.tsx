@@ -18,18 +18,18 @@ export interface AlertProps {
 
 const TONE_BG: Record<AlertTone, string> = {
   offline: "bg-mist/60",
-  danger: "bg-urgent/10",
-  warning: "bg-clinic/15",
-  info: "bg-neem/10",
-  success: "bg-home/10"
+  danger: "bg-danger/10",
+  warning: "bg-warning/15",
+  info: "bg-info/10",
+  success: "bg-success/10"
 };
 
 const TONE_ICON: Record<AlertTone, string> = {
-  offline: "text-neem-dark",
-  danger: "text-urgent",
-  warning: "text-clinic",
-  info: "text-neem",
-  success: "text-home"
+  offline: "text-offline",
+  danger: "text-danger",
+  warning: "text-warning",
+  info: "text-info",
+  success: "text-success"
 };
 
 const DEFAULT_ICON: Record<AlertTone, LucideIcon> = {
@@ -41,7 +41,9 @@ const DEFAULT_ICON: Record<AlertTone, LucideIcon> = {
 };
 
 // Non-blocking status banner: icon + title + plain text, never colour alone,
-// with an optional single action. Pass role="alert" for live errors.
+// with an optional single action. Pass role="alert" for live errors. Tones
+// use the decoupled SYSTEM tokens — an info/success/warning/danger banner is
+// never a clinical risk state.
 export function Alert({
   tone,
   title,

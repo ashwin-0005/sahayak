@@ -11,7 +11,8 @@ interface NumberPadProps {
   id: string;
 }
 
-// On-screen numeric entry for readings and PINs. Big keys, works with one hand.
+// On-screen numeric entry for readings and PINs. Big keys, works with one
+// hand. Digits + backspace only — PINs and readings are never decimal.
 export function NumberPad({ value, onChange, maxLength = 4, label, id }: NumberPadProps) {
   const { t } = useTranslation();
   const labelId = `numpad-label-${id}`;
@@ -22,16 +23,16 @@ export function NumberPad({ value, onChange, maxLength = 4, label, id }: NumberP
 
   const back = () => onChange(value.slice(0, -1));
 
-  const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "back"];
+  const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "back"];
 
   return (
     <div className="w-full">
       <div className="mb-3 flex items-end justify-between">
-        <label className="text-section font-semibold" id={labelId}>
+        <label className="text-body font-bold" id={labelId}>
           {label}
         </label>
         <span
-          className="font-mukta text-4xl font-extrabold tabular-nums tracking-widest"
+          className="font-mukta text-display font-extrabold tabular-nums tracking-widest"
           role="status"
           aria-label={label}
         >

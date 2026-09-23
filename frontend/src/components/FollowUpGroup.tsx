@@ -11,10 +11,11 @@ interface FollowUpGroupProps {
 }
 
 // A named section of the Today dashboard: colored icon + title + a short
-// text explanation, then the list of patient cards underneath.
+// text explanation, then the list of patient cards underneath. Falls back to
+// the token spacing rhythm (section gap above, card gap between rows).
 export function FollowUpGroup({ title, explain, icon: Icon, color, children }: FollowUpGroupProps) {
   return (
-    <section aria-label={title} className="mt-5">
+    <section aria-label={title} className="mt-section">
       <header className="flex items-start gap-2.5">
         <span
           className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
@@ -27,7 +28,7 @@ export function FollowUpGroup({ title, explain, icon: Icon, color, children }: F
           {explain ? <p className="mt-0.5 text-base leading-snug text-neem-dark">{explain}</p> : null}
         </div>
       </header>
-      <div className="mt-3 flex flex-col gap-3">{children}</div>
+      <div className="mt-3 flex flex-col gap-card">{children}</div>
     </section>
   );
 }

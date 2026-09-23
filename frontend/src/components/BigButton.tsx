@@ -17,7 +17,9 @@ const VARIANTS: Record<string, string> = {
   primary: "btn-primary",
   secondary: "btn-secondary",
   ghost: "btn-ghost",
-  danger: "btn bg-urgent text-white"
+  // Destructive actions use the system danger token — never the clinical
+  // urgent red (reserved for patient risk).
+  danger: "btn bg-danger text-white"
 };
 
 export function BigButton({

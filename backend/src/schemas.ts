@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const loginSchema = z.object({
   workerId: z.string().min(1),
-  pin: z.string().min(1),
+  pin: z.string().regex(/^\d{4,6}$/, "PIN must be 4-6 digits"),
 });
 
 const isoDate = z.string().refine((s) => !Number.isNaN(Date.parse(s)), "Invalid ISO date");
