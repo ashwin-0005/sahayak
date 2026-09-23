@@ -122,7 +122,15 @@
     border-left: 6px solid theme("colors.danger");
   }
   .num-key {
-    @apply h-[64px] w-full rounded-button bg-white text-display font-extrabold text-ink border border-mist active:bg-mist;
+    @apply h-20 w-full rounded-button bg-white text-display font-extrabold text-ink border border-mist active:bg-mist;
+  }
+}
+
+/* Horizontally scrolling chip rows (patient filters) strip the scrollbar */
+.no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
   }
 }
 

@@ -13,11 +13,14 @@ interface PatientCardProps {
   onClick?: () => void;
   // Marks a patient that has changes saved locally but not yet uploaded.
   waitingSync?: boolean;
+  // The single most-urgent card gets a louder treatment so the top action on
+  // the screen is unmistakable (tint + border + elevation from tokens only).
+  emphasized?: boolean;
 }
 
 // Patient list card with the condition-colored left rail. Risk and sync
 // state are always icon + words + rail — never colour alone.
-export function PatientCard({ patient, lastRiskLevel, onClick, waitingSync = false }: PatientCardProps) {
+export function PatientCard({ patient, lastRiskLevel, onClick, waitingSync = false, emphasized = false }: PatientCardProps) {
   const { t, i18n } = useTranslation();
   const lng = (i18n.language ?? "en").startsWith("hi") ? "hi" : "en";
   const overdue = patient.next_visit_date
@@ -31,7 +34,9 @@ export function PatientCard({ patient, lastRiskLevel, onClick, waitingSync = fal
     <Link
       to={onClick ? "#" : `/patients/${patient.id}`}
       onClick={onClick}
-      className={`card block w-full text-left transition-transform active:scale-[0.99] ${railClass}`}
+      className={`card block w-full text-left transition-transform active:scale-[0.99] ${railClass} ${
+        emphasized ? "border-urgent/60 bg-urgent/5 shadow-raised" : ""
+      }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">

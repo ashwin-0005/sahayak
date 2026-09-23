@@ -59,13 +59,17 @@ export default function PatientsPage() {
           />
         </label>
 
-        <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label={t("patients.conditionFilter")}>
+        <div
+          className="no-scrollbar -mx-4 mt-3 flex items-center gap-2 overflow-x-auto px-4 pb-1"
+          role="group"
+          aria-label={t("patients.conditionFilter")}
+        >
           {FILTERS.map((c) => (
             <button
               key={c}
               type="button"
               disabled
-              className={`tag min-h-[48px] opacity-50 ${
+              className={`tag min-h-[48px] shrink-0 whitespace-nowrap opacity-50 ${
                 filter === c ? "bg-neem text-white" : "bg-mist text-neem-dark"
               }`}
             >
@@ -96,14 +100,18 @@ export default function PatientsPage() {
         />
       </label>
 
-      <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label={t("patients.conditionFilter")}>
+      <div
+        className="no-scrollbar -mx-4 mt-3 flex items-center gap-2 overflow-x-auto px-4 pb-1"
+        role="group"
+        aria-label={t("patients.conditionFilter")}
+      >
         {FILTERS.map((c) => (
             <button
               key={c}
               type="button"
               onClick={() => setFilter(c)}
               aria-pressed={filter === c}
-              className={`tag min-h-[48px] ${
+              className={`tag min-h-[48px] shrink-0 whitespace-nowrap ${
               filter === c ? "bg-neem text-white" : "bg-mist text-neem-dark"
             }`}
           >

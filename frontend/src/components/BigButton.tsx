@@ -4,7 +4,7 @@ import type { LucideIcon } from "lucide-react";
 interface BigButtonProps {
   children: ReactNode;
   icon?: LucideIcon;
-  variant?: "primary" | "secondary" | "ghost" | "danger";
+  variant?: "primary" | "secondary" | "ghost" | "danger" | "dangerQuiet";
   disabled?: boolean;
   onClick?: () => void;
   className?: string;
@@ -19,7 +19,10 @@ const VARIANTS: Record<string, string> = {
   ghost: "btn-ghost",
   // Destructive actions use the system danger token — never the clinical
   // urgent red (reserved for patient risk).
-  danger: "btn bg-danger text-white"
+  danger: "btn bg-danger text-white",
+  // Quiet destructive: a cautious style for irreversible actions that should
+  // read as low-key, not alarm. Same token family, softer presence.
+  dangerQuiet: "btn bg-danger/10 text-danger"
 };
 
 export function BigButton({

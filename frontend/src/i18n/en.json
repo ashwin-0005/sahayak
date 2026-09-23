@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "Sahayak",
-    "tagline": "Follow-up care, offline",
+    "tagline": "Patient follow-up that works even offline",
     "description": "Follow-up care for community health workers, even offline"
   },
   "nav": {

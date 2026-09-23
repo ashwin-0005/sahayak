@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
+import { ClipboardList } from "lucide-react";
 import { loginOnline, unlockOffline } from "../auth/auth";
 import { NumberPad } from "../components/NumberPad";
 import { BigButton } from "../components/BigButton";
@@ -68,10 +69,18 @@ export default function LoginPage() {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col px-5 pb-10 pt-6">
 <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-page font-extrabold text-ink">{t("app.name")}</h1>
-            <p className="text-body text-neem-dark">{t("app.tagline")}</p>
+        <div className="flex min-w-0 items-center gap-3">
+          <span
+            className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-card bg-neem text-white"
+            aria-hidden="true"
+          >
+            <ClipboardList className="size-6" />
+          </span>
+          <div className="min-w-0">
+            <h1 className="truncate text-page font-extrabold text-ink">{t("app.name")}</h1>
+            <p className="text-body leading-snug text-neem-dark">{t("app.tagline")}</p>
           </div>
+        </div>
           <ToggleGroup
             pill
             label={t("login.languageLabel")}
@@ -84,7 +93,7 @@ export default function LoginPage() {
           />
         </div>
 
-        <div className="mt-10 flex flex-1 flex-col">
+        <div className="mt-6 flex flex-1 flex-col">
           <div className="mb-2 flex items-center gap-2 text-support font-semibold text-neem-dark">
             {t(online ? "login.subtitle" : "login.unlockOffline")}
           </div>

@@ -164,7 +164,7 @@ export default function SettingsPage() {
         </section>
       ) : null}
 
-      <div className="mt-4 flex flex-col gap-3">
+      <div className="mt-4 flex flex-col gap-card">
         {installEvt ? (
           <BigButton variant="secondary" icon={Download} onClick={doInstall}>
             {t("settings.install")}
@@ -173,7 +173,10 @@ export default function SettingsPage() {
         <BigButton variant="secondary" icon={Lock} onClick={() => void lockApp().then(() => navigate("/login"))}>
           {t("settings.lock")}
         </BigButton>
-        <BigButton variant="secondary" icon={Trash2} onClick={() => setConfirming(true)}>
+      </div>
+
+      <div className="mt-section flex flex-col gap-card border-t border-mist pt-4">
+        <BigButton variant="dangerQuiet" icon={Trash2} onClick={() => setConfirming(true)}>
           {t("settings.reset")}
         </BigButton>
         <BigButton variant="danger" icon={Lock} onClick={() => void deleteSession().then(() => navigate("/login"))}>

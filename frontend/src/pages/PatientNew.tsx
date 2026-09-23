@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Baby, Droplets, HeartPulse, Stethoscope, UserRound, Users, X } from "lucide-react";
+import { Baby, Check, Droplets, HeartPulse, Stethoscope, UserRound, Users, X } from "lucide-react";
 import type { ComponentType } from "react";
 import { PageShell } from "../components/PageShell";
 import { BigButton } from "../components/BigButton";
@@ -173,12 +173,15 @@ export default function PatientNewPage() {
                 type="button"
                 onClick={() => setCondition(value)}
                 aria-pressed={condition === value}
-                className={`flex min-h-[64px] items-center gap-2 rounded-button px-4 text-body font-bold ${
-                  condition === value ? "bg-neem text-white" : "bg-mist text-neem-dark"
+                className={`relative flex min-h-[88px] flex-col items-center justify-center gap-1.5 rounded-button px-2 py-3 text-body font-bold ${
+                  condition === value ? "bg-neem text-white shadow-raised" : "border border-mist bg-paper text-neem-dark"
                 }`}
               >
-                <Icon className="size-6 shrink-0" aria-hidden="true" />
-                {t(`condition.${value}`)}
+                <Icon className="size-7 shrink-0" aria-hidden="true" />
+                <span>{t(`condition.${value}`)}</span>
+                {condition === value ? (
+                  <Check className="absolute right-2 top-2 size-5" strokeWidth={3} aria-hidden="true" />
+                ) : null}
               </button>
             ))}
           </div>

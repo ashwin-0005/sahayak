@@ -278,32 +278,6 @@ export default function HomePage() {
         <FilterTabs options={options} value={filter} onChange={setFilter} label={t("home.filterA11y")} />
       </div>
 
-      <details className="mt-3 rounded-card border border-mist bg-white p-3">
-        <summary className="flex cursor-pointer list-none items-center gap-2 text-body font-bold text-neem-dark">
-          <CircleHelp className="size-4" aria-hidden="true" />
-          {t("home.legendTitle")}
-        </summary>
-        <p className="mt-2 text-support text-neem-dark">{t("home.legendHint")}</p>
-        <ul className="mt-2 flex flex-col gap-2">
-          {URGENCY_LEGEND.map(({ risk, instructKey }) => {
-            const Icon = RISK_META[risk].icon;
-            return (
-              <li key={risk} className="flex items-start gap-2.5">
-                <span
-                  className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
-                  style={{ backgroundColor: RISK_META[risk].color }}
-                >
-                  <Icon className="size-3.5 text-white" aria-hidden="true" />
-                </span>
-                <span className="text-support leading-snug text-ink">
-                  <strong className="font-extrabold">{t(`risk.${risk}`)}</strong> — {t(instructKey)}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-      </details>
-
       {groups.length === 0 ? (
         <section className="mt-6" aria-live="polite">
           <EmptyState
@@ -318,14 +292,24 @@ export default function HomePage() {
         groups.map(({ key, items }) => {
           const meta = GROUP_META[key];
           const slice = items.slice(0, MAX_LIST);
+          const headCount = key === "urgent" || key === "overdue" ? items.length : undefined;
           return (
-            <FollowUpGroup key={key} title={meta.title} explain={meta.explain} icon={meta.icon} color={meta.color}>
-              {slice.map(({ patient }) => (
+            <FollowUpGroup
+              key={key}
+              title={meta.title}
+              explain={meta.explain}
+              icon={meta.icon}
+              color={meta.color}
+              count={headCount}
+              countColor={meta.color}
+            >
+              {slice.map(({ patient }, index) => (
                 <PatientCard
                   key={patient.id}
                   patient={patient}
                   lastRiskLevel={lastRisk(visits, patient.id)}
                   waitingSync={key === "waitingSync"}
+                  emphasized={key === "urgent" && index === 0}
                 />
               ))}
             </FollowUpGroup>
@@ -343,6 +327,34 @@ export default function HomePage() {
           </p>
         </div>
       ) : null}
+
+      <details className="mt-5">
+        <summary className="flex w-fit cursor-pointer list-none items-center gap-1.5 text-support font-semibold text-neem-dark underline decoration-mist underline-offset-4">
+          <CircleHelp className="size-4" aria-hidden="true" />
+          {t("home.legendTitle")}
+        </summary>
+        <div className="mt-2 w-full rounded-card bg-mist/50 p-3">
+          <p className="text-support text-neem-dark">{t("home.legendHint")}</p>
+          <ul className="mt-2 flex flex-col gap-2">
+            {URGENCY_LEGEND.map(({ risk, instructKey }) => {
+              const Icon = RISK_META[risk].icon;
+              return (
+                <li key={risk} className="flex items-start gap-2.5">
+                  <span
+                    className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
+                    style={{ backgroundColor: RISK_META[risk].color }}
+                  >
+                    <Icon className="size-3.5 text-white" aria-hidden="true" />
+                  </span>
+                  <span className="text-support leading-snug text-ink">
+                    <strong className="font-extrabold">{t(`risk.${risk}`)}</strong> — {t(instructKey)}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </details>
     </PageShell>
   );
 }
