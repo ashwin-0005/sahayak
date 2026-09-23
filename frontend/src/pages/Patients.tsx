@@ -123,7 +123,7 @@ export default function PatientsPage() {
         ) : (
           <>
             {filtered.length > 100 ? (
-              <p role="status" className="text-base text-neem-dark">
+              <p role="status" className="text-support text-neem-dark">
                 {t("patients.showingFirst", { count: 100, total: filtered.length })}
               </p>
             ) : null}

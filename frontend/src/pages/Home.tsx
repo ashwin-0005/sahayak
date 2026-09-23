@@ -279,11 +279,11 @@ export default function HomePage() {
       </div>
 
       <details className="mt-3 rounded-card border border-mist bg-white p-3">
-        <summary className="flex cursor-pointer list-none items-center gap-2 text-base font-bold text-neem-dark">
+        <summary className="flex cursor-pointer list-none items-center gap-2 text-body font-bold text-neem-dark">
           <CircleHelp className="size-4" aria-hidden="true" />
           {t("home.legendTitle")}
         </summary>
-        <p className="mt-2 text-base text-neem-dark">{t("home.legendHint")}</p>
+        <p className="mt-2 text-support text-neem-dark">{t("home.legendHint")}</p>
         <ul className="mt-2 flex flex-col gap-2">
           {URGENCY_LEGEND.map(({ risk, instructKey }) => {
             const Icon = RISK_META[risk].icon;
@@ -295,7 +295,7 @@ export default function HomePage() {
                 >
                   <Icon className="size-3.5 text-white" aria-hidden="true" />
                 </span>
-                <span className="text-base leading-snug text-ink">
+                <span className="text-support leading-snug text-ink">
                   <strong className="font-extrabold">{t(`risk.${risk}`)}</strong> — {t(instructKey)}
                 </span>
               </li>
@@ -338,7 +338,7 @@ export default function HomePage() {
           <BigButton variant="secondary" className="w-full" onClick={() => navigate("/patients")}>
             {t("home.seeAllPatients")}
           </BigButton>
-          <p className="mt-2 text-center text-base text-neem-dark">
+          <p className="mt-2 text-center text-support text-neem-dark">
             {t("home.showingFirst", { n: formatNumber(cappedTotal, lng) })}
           </p>
         </div>

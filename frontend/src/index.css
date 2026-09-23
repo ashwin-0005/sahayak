@@ -118,6 +118,9 @@
   .rail-home {
     border-left: 6px solid theme("colors.home");
   }
+  .rail-danger {
+    border-left: 6px solid theme("colors.danger");
+  }
   .num-key {
     @apply h-[64px] w-full rounded-button bg-white text-display font-extrabold text-ink border border-mist active:bg-mist;
   }

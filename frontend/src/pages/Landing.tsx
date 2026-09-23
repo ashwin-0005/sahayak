@@ -38,7 +38,7 @@ export default function LandingPage() {
 
         <button
           type="button"
-          className="mt-4 text-base font-semibold text-neem underline"
+          className="mt-4 text-support font-semibold text-neem underline"
           onClick={() => setShowDemo(!showDemo)}
           aria-expanded={showDemo}
         >
@@ -49,9 +49,9 @@ export default function LandingPage() {
           <div
             role="region"
             aria-label={t("landing.demoTitle")}
-            className="mt-3 w-full max-w-[320px] alert alert-info text-left text-base text-ink"
-          >
-            <p className="font-semibold mb-2">{t("landing.demoTitle")}</p>
+className="mt-3 w-full max-w-[320px] alert alert-info text-left text-support text-ink"
+            >
+              <p className="mb-2 text-body font-semibold">{t("landing.demoTitle")}</p>
             <p className="mb-1">{t("landing.demoId")}</p>
             <p className="mb-3">{t("landing.demoPin")}</p>
             <BigButton

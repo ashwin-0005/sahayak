@@ -25,7 +25,7 @@ export function FollowUpGroup({ title, explain, icon: Icon, color, children }: F
         </span>
         <div className="min-w-0">
           <h2 className="text-section font-extrabold leading-tight text-ink">{title}</h2>
-          {explain ? <p className="mt-0.5 text-base leading-snug text-neem-dark">{explain}</p> : null}
+          {explain ? <p className="mt-0.5 text-support leading-snug text-neem-dark">{explain}</p> : null}
         </div>
       </header>
       <div className="mt-3 flex flex-col gap-card">{children}</div>

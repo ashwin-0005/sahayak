@@ -21,6 +21,7 @@ import { EmptyState } from "../components/EmptyState";
 import { getPatient, getVisitsForPatient } from "../db/repo";
 import { lastRisk, lastVisit } from "../lib/records";
 import { formatDate, formatTime } from "../lib/dates";
+import { colorToken } from "../theme/tokens";
 import type { Patient, Visit } from "../types";
 
 export default function PatientDetailPage() {
@@ -124,17 +125,17 @@ export default function PatientDetailPage() {
           <div className="mt-3 h-56">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={bpData} margin={{ top: 8, right: 8, bottom: 0, left: -22 }}>
-                <CartesianGrid stroke="#DDE9E2" />
+                <CartesianGrid stroke={colorToken.mist} />
                 <XAxis dataKey="label" tick={{ fontSize: 12 }} />
                 <YAxis domain={[40, 220]} tick={{ fontSize: 12 }} />
                 <Tooltip />
                 <Legend />
-                <ReferenceLine y={140} label="140" stroke="#B45309" strokeDasharray="4 4" />
-                <ReferenceLine y={90} label="90" stroke="#B45309" strokeDasharray="4 4" />
-                <ReferenceLine y={180} label="180" stroke="#C62828" strokeDasharray="4 4" />
-                <ReferenceLine y={120} label="120" stroke="#C62828" strokeDasharray="4 4" />
-                <Line type="monotone" dataKey="sys" name={`${t("detail.bp")} sys`} stroke="#1D6A50" strokeWidth={3} dot={{ r: 3 }} />
-                <Line type="monotone" dataKey="dia" name={`${t("detail.bp")} dia`} stroke="#10231C" strokeWidth={3} dot={{ r: 3 }} />
+                <ReferenceLine y={140} label="140" stroke={colorToken.warning} strokeDasharray="4 4" />
+                <ReferenceLine y={90} label="90" stroke={colorToken.warning} strokeDasharray="4 4" />
+                <ReferenceLine y={180} label="180" stroke={colorToken.urgent} strokeDasharray="4 4" />
+                <ReferenceLine y={120} label="120" stroke={colorToken.urgent} strokeDasharray="4 4" />
+                <Line type="monotone" dataKey="sys" name={`${t("detail.bp")} sys`} stroke={colorToken.neem} strokeWidth={3} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="dia" name={`${t("detail.bp")} dia`} stroke={colorToken.ink} strokeWidth={3} dot={{ r: 3 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -147,14 +148,14 @@ export default function PatientDetailPage() {
           <div className="mt-3 h-56">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={sugarData} margin={{ top: 8, right: 8, bottom: 0, left: -22 }}>
-                <CartesianGrid stroke="#DDE9E2" />
+                <CartesianGrid stroke={colorToken.mist} />
                 <XAxis dataKey="label" tick={{ fontSize: 12 }} />
                 <YAxis domain={[40, 400]} tick={{ fontSize: 12 }} />
                 <Tooltip />
                 <Legend />
-                <ReferenceLine y={126} label="126" stroke="#B45309" strokeDasharray="4 4" />
-                <ReferenceLine y={200} label="200" stroke="#B45309" strokeDasharray="4 4" />
-                <Line type="monotone" dataKey="sugar" name={t("detail.sugar")} stroke="#1D6A50" strokeWidth={3} dot={{ r: 3 }} />
+                <ReferenceLine y={126} label="126" stroke={colorToken.warning} strokeDasharray="4 4" />
+                <ReferenceLine y={200} label="200" stroke={colorToken.warning} strokeDasharray="4 4" />
+                <Line type="monotone" dataKey="sugar" name={t("detail.sugar")} stroke={colorToken.neem} strokeWidth={3} dot={{ r: 3 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -164,7 +165,7 @@ export default function PatientDetailPage() {
       <section className="mt-6">
         <h2 className="text-section font-extrabold">{t("detail.visitsTitle")}</h2>
         {visits.length > 50 ? (
-          <p role="status" className="mt-1 text-base text-neem-dark">
+          <p role="status" className="mt-1 text-support text-neem-dark">
             {t("detail.showingRecent", { count: 50, total: visits.length })}
           </p>
         ) : null}
@@ -186,7 +187,7 @@ export default function PatientDetailPage() {
                   <div className="flex items-center justify-between">
                     <p className="text-body font-extrabold">
                       {formatDate(v.visited_at, i18n.language === "hi" ? "hi" : "en")}{" "}
-                      <span className="text-base font-normal text-neem-dark">
+                      <span className="text-support font-normal text-neem-dark">
                         {formatTime(v.visited_at, i18n.language === "hi" ? "hi" : "en")}
                       </span>
                     </p>
@@ -212,9 +213,9 @@ export default function PatientDetailPage() {
                     {v.missed_doses > 0 ? ` · ${t("visit.missedDoses")}: ${v.missed_doses}` : null}
                   </p>
                   {v.symptoms.length > 0 && (
-                    <p className="mt-1 text-base text-neem-dark">
-                      {v.symptoms.map((s) => t(`symptom.${s}`)).join(", ")}
-                    </p>
+<p className="mt-1 text-support text-neem-dark">
+  {v.symptoms.map((s) => t(`symptom.${s}`)).join(", ")}
+</p>
                   )}
                 </div>
               ))

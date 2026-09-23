@@ -36,7 +36,7 @@ export function PatientCard({ patient, lastRiskLevel, onClick, waitingSync = fal
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-body font-extrabold leading-tight">{patient.name}</p>
-          <p className="text-base text-neem-dark">
+          <p className="text-support text-neem-dark">
             {patient.age}, {patient.village}
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -47,7 +47,7 @@ export function PatientCard({ patient, lastRiskLevel, onClick, waitingSync = fal
               </Badge>
             ) : null}
           </div>
-          <p className="mt-2 flex items-center gap-1 text-base text-ink">
+          <p className="mt-2 flex items-center gap-1 text-support text-ink">
             {overdue !== null ? (
               <>
                 <CalendarClock className="size-4" aria-hidden="true" />

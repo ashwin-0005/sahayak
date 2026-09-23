@@ -113,22 +113,22 @@ export default function SettingsPage() {
 
       <div className="mt-4 card">
         <p className="text-body font-bold text-ink">{t("settings.about")}</p>
-        <p className="mt-1 text-base text-neem-dark">
+        <p className="mt-1 text-support text-neem-dark">
           {t("app.name")} · {t("settings.patientCount", { count: patientCount })}
         </p>
-        <p className="mt-3 flex items-start gap-2 text-base text-neem-dark">
+        <p className="mt-3 flex items-start gap-2 text-support text-neem-dark">
           <ShieldCheck className="mt-0.5 size-5 shrink-0 text-neem" aria-hidden="true" />
           {t("settings.disclaimer")}
         </p>
       </div>
 
       {quarantine.length > 0 ? (
-        <section aria-label={t("settings.syncIssuesTitle")} className="mt-4 card rail-urgent">
+        <section aria-label={t("settings.syncIssuesTitle")} className="mt-4 card rail-danger">
           <p className="flex items-center gap-2 text-body font-bold text-ink">
-            <AlertTriangle className="size-5 text-urgent" aria-hidden="true" />
+            <AlertTriangle className="size-5 text-danger" aria-hidden="true" />
             {t("settings.syncIssuesTitle")}
           </p>
-          <p className="mt-1 text-base text-neem-dark">
+          <p className="mt-1 text-support text-neem-dark">
             {quarantine.length === 1
               ? t("settings.syncIssuesBodyOne")
               : t("settings.syncIssuesBody", { count: quarantine.length })}
@@ -140,13 +140,13 @@ export default function SettingsPage() {
                   <p className="truncate text-body font-bold text-ink">
                     {q.id !== undefined ? quarantineNames[q.id] ?? q.code : q.code}
                   </p>
-                  <p className="text-base text-neem-dark">
+                  <p className="text-support text-neem-dark">
                     {q.code} · {q.message}
                   </p>
                 </div>
                 <button
                   type="button"
-                  className="min-h-[48px] shrink-0 px-3 text-body font-bold text-urgent"
+                  className="min-h-[48px] shrink-0 px-3 text-body font-bold text-danger"
                   onClick={() => void (q.id !== undefined ? discardQuarantine(q.id).then(() => void reloadQuarantine()) : Promise.resolve())}
                 >
                   {t("settings.discard")}
@@ -189,7 +189,7 @@ export default function SettingsPage() {
           ariaLabel={t("settings.resetConfirmTitle")}
           describedBy="reset-confirm-body"
         >
-          <p className="text-section font-extrabold text-urgent">{t("settings.resetConfirmTitle")}</p>
+          <p className="text-section font-extrabold text-danger">{t("settings.resetConfirmTitle")}</p>
           <p id="reset-confirm-body" className="mt-2 text-body text-ink">{t("settings.resetConfirmBody")}</p>
           <div className="mt-5 flex flex-col gap-3">
             <BigButton variant="danger" icon={RotateCcw} onClick={() => void doReset()}>

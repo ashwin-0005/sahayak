@@ -62,7 +62,7 @@ export function Alert({
         <Icon className={`mt-0.5 size-5 shrink-0 ${TONE_ICON[tone]}`} aria-hidden="true" />
         <div className="min-w-0">
           <p className="text-body font-extrabold leading-tight text-ink">{title}</p>
-          {body ? <p className="mt-0.5 text-base leading-snug text-neem-dark">{body}</p> : null}
+          {body ? <p className="mt-0.5 text-support leading-snug text-neem-dark">{body}</p> : null}
         </div>
       </div>
       {actionLabel && onAction ? (

@@ -85,7 +85,7 @@ export default function LoginPage() {
         </div>
 
         <div className="mt-10 flex flex-1 flex-col">
-          <div className="mb-2 flex items-center gap-2 text-base font-semibold text-neem-dark">
+          <div className="mb-2 flex items-center gap-2 text-support font-semibold text-neem-dark">
             {t(online ? "login.subtitle" : "login.unlockOffline")}
           </div>
 

@@ -141,7 +141,7 @@ export default function ReminderPage() {
       </div>
 
       {!patient.phone ? (
-        <p role="alert" className="mt-3 text-body font-bold text-urgent">
+        <p role="alert" className="mt-3 text-body font-bold text-danger">
           {t("reminder.noPhone")}
         </p>
       ) : null}
@@ -158,9 +158,9 @@ export default function ReminderPage() {
         </BigButton>
       </div>
 
-      <p className="mt-4 text-base text-neem-dark">{t("reminder.shareNotice")}</p>
+      <p className="mt-4 text-support text-neem-dark">{t("reminder.shareNotice")}</p>
 
-      <p className="mt-4 text-base text-neem-dark">{t("settings.disclaimer")}</p>
+      <p className="mt-4 text-support text-neem-dark">{t("settings.disclaimer")}</p>
 
       {toast ? <Toast message={t("reminder.copied")} onDone={() => setToast(false)} /> : null}
     </PageShell>

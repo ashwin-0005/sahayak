@@ -74,8 +74,8 @@ export function SummaryCardSkeleton() {
     <div className="card flex flex-col items-center gap-1 text-center animate-pulse" role="status" aria-label={t("common.loading")}>
       <span className="sr-only">{t("common.loading")}</span>
       <Skeleton className="size-6" />
-      <Skeleton className="text-4xl w-12" />
-      <Skeleton className="text-base w-20" />
+      <Skeleton className="text-display w-12" />
+      <Skeleton className="text-support w-20" />
     </div>
   );
 }

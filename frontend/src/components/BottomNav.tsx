@@ -29,7 +29,7 @@ export function BottomNav() {
               to={to}
               end={end}
               className={({ isActive }) =>
-                `flex h-16 flex-col items-center justify-center gap-0.5 text-base font-semibold ${
+                `flex h-16 flex-col items-center justify-center gap-0.5 text-support font-semibold ${
                   isActive ? "text-neem" : "text-neem-dark"
                 }`
               }

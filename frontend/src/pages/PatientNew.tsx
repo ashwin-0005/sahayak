@@ -86,7 +86,7 @@ export default function PatientNewPage() {
       </div>
 
       {fieldError ? (
-        <p role="alert" className="mt-3 text-body font-bold text-urgent">
+        <p role="alert" className="mt-3 text-body font-bold text-danger">
           {fieldError}
         </p>
       ) : null}
@@ -112,7 +112,7 @@ export default function PatientNewPage() {
             <input
               id="pAge"
               inputMode="numeric"
-              className="mt-1 min-h-[56px] w-full rounded-button border border-mist bg-white px-3 text-xl font-extrabold"
+              className="mt-1 min-h-[56px] w-full rounded-button border border-mist bg-white px-3 text-body font-extrabold"
               value={age}
               onChange={(e) => setAge(e.target.value.replace(/\D/g, ""))}
             />
@@ -126,7 +126,7 @@ export default function PatientNewPage() {
                   type="button"
                   onClick={() => setSex(value)}
                   aria-pressed={sex === value}
-                  className={`flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-button text-base font-bold ${
+                  className={`flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-button text-body font-bold ${
                     sex === value ? "bg-neem text-white" : "bg-mist text-neem-dark"
                   }`}
                 >

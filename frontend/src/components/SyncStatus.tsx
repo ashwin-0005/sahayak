@@ -21,15 +21,15 @@ export function SyncStatus({ onSynced }: { onSynced?: () => void }) {
         <StatusChip status={sync.status} />
         {sync.pending > 0 ? <Badge tone="warning">{pendingLabel}</Badge> : null}
         {sync.authExpired ? (
-          <span role="alert" className="text-base font-bold text-urgent">
+          <span role="alert" className="text-support font-bold text-danger">
             {t("status.authExpired")}
           </span>
         ) : sync.status === "syncing" && slowSync ? (
-          <span role="status" className="text-base text-neem-dark">
+          <span role="status" className="text-support text-neem-dark">
             {t("status.slowSync")}
           </span>
         ) : null}
-        <span className="flex items-center gap-1 text-base text-neem-dark">
+        <span className="flex items-center gap-1 text-support text-neem-dark">
           <Clock className="size-4" aria-hidden="true" />
           {sync.lastSyncedAt ? t("status.lastSync", { time: formatTime(sync.lastSyncedAt, i18n.language) }) : t("status.never")}
         </span>

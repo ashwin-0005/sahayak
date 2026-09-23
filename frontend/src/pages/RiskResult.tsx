@@ -95,10 +95,10 @@ export default function RiskResultPage() {
     <PageShell noNav>
       <div className="relative overflow-hidden rounded-card p-6 text-white" style={{ backgroundColor: meta.bg }}>
         <Icon className="absolute -right-4 -top-4 size-28 opacity-20" aria-hidden="true" />
-        <p className="text-base font-semibold uppercase tracking-wide">{t("risk.summary")}</p>
-        <p className="mt-1 text-5xl font-extrabold">{t(`risk.${visit.risk_level}`)}</p>
+        <p className="text-support font-semibold uppercase tracking-wide">{t("risk.summary")}</p>
+        <p className="mt-1 text-display font-extrabold">{t(`risk.${visit.risk_level}`)}</p>
         <p className="mt-2 text-body">{patient.name}</p>
-        {reads.length > 0 && <p className="mt-1 text-base opacity-90">{reads.join(" · ")}</p>}
+        {reads.length > 0 && <p className="mt-1 text-support opacity-90">{reads.join(" · ")}</p>}
       </div>
 
       <div className="mt-4 flex flex-col gap-1.5">
@@ -115,7 +115,7 @@ export default function RiskResultPage() {
         <p className="mt-2 text-body text-neem-dark">
           {t("risk.nextVisit")}: {patient.next_visit_date ? formatDate(patient.next_visit_date, lng) : "—"}
         </p>
-        <p className="mt-2 text-base text-neem-dark">{t("settings.disclaimer")}</p>
+        <p className="mt-2 text-support text-neem-dark">{t("settings.disclaimer")}</p>
       </div>
 
       <div className="mt-4 flex flex-col gap-3">
@@ -124,7 +124,7 @@ export default function RiskResultPage() {
             {t("risk.listen")}
           </BigButton>
         ) : (
-          <p className="text-base text-neem-dark">{t("risk.listenMissing")}</p>
+          <p className="text-support text-neem-dark">{t("risk.listenMissing")}</p>
         )}
         <BigButton icon={Bell} onClick={() => navigate(`/reminders/${patient.id}`)}>
           {t("risk.sendReminder")}

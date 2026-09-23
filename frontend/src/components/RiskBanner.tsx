@@ -26,7 +26,7 @@ export function RiskBanner({ level, reasonKeys = [], className = "" }: RiskBanne
       <div className="min-w-0">
         <p className="font-extrabold">{t(`risk.${level}`)}</p>
         {reasonKeys.map((key) => (
-          <p key={key} className="text-base leading-snug">
+          <p key={key} className="text-support leading-snug">
             {t(key)}
           </p>
         ))}

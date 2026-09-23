@@ -251,7 +251,7 @@ export default function VisitNewPage() {
               >
                 −
               </button>
-              <span role="status" className="flex-1 text-center text-4xl font-extrabold tabular-nums">{missedDoses}</span>
+              <span role="status" className="flex-1 text-center text-display font-extrabold tabular-nums">{missedDoses}</span>
               <button
                 type="button"
                 className="num-key"
@@ -299,7 +299,7 @@ export default function VisitNewPage() {
           {recCtor ? (
             <button
               type="button"
-              className={`btn-secondary mt-2 ${listening ? "bg-urgent text-white" : ""}`}
+              className={`btn-secondary mt-2 ${listening ? "bg-primary text-white" : ""}`}
               onClick={toggleMic}
               aria-label={listening ? t("visit.micListening") : t("visit.mic")}
             >
@@ -307,7 +307,7 @@ export default function VisitNewPage() {
               {listening ? t("visit.micListening") : t("visit.mic")}
             </button>
           ) : (
-            <p className="mt-2 text-base text-neem-dark">{t("visit.micUnsupported")}</p>
+            <p className="mt-2 text-support text-neem-dark">{t("visit.micUnsupported")}</p>
           )}
         </div>
 
@@ -315,7 +315,7 @@ export default function VisitNewPage() {
           {t("visit.save")}
         </BigButton>
         {tbEmpty ? (
-          <p role="status" className="text-base text-neem-dark">
+          <p role="status" className="text-support text-neem-dark">
             {t("visit.tbRequired")}
           </p>
         ) : null}
@@ -329,7 +329,7 @@ export default function VisitNewPage() {
           ariaLabel={t("visit.implausibleTitle")}
           describedBy="implausible-body"
         >
-          <p className="text-section font-extrabold text-urgent">{t("visit.implausibleTitle")}</p>
+          <p className="text-section font-extrabold text-danger">{t("visit.implausibleTitle")}</p>
           <p id="implausible-body" className="mt-2 text-body text-ink">{t("visit.implausibleBody")}</p>
           <div className="mt-5 flex flex-col gap-3">
             <BigButton variant="danger" dataAutofocus onClick={() => setShowPlausibility(false)}>
