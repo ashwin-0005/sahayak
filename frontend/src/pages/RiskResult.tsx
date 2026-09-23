@@ -93,15 +93,25 @@ export default function RiskResultPage() {
 
   return (
     <PageShell noNav>
-      <div className="relative overflow-hidden rounded-card p-6 text-white" style={{ backgroundColor: meta.bg }}>
-        <Icon className="absolute -right-4 -top-4 size-28 opacity-20" aria-hidden="true" />
-        <p className="text-support font-semibold uppercase tracking-wide">{t("risk.summary")}</p>
-        <p className="mt-1 text-display font-extrabold">{t(`risk.${visit.risk_level}`)}</p>
-        <p className="mt-2 text-body">{patient.name}</p>
-        {reads.length > 0 && <p className="mt-1 text-support opacity-90">{reads.join(" · ")}</p>}
+      {/* The one deliberate "moment": the risk color fills the screen with
+          its icon centered, then fades to reveal the hero band while the
+          message and actions rise in a beat after. Reduced motion collapses
+          all of this to the resting layout instantly. */}
+      <div className="mv-risk-wash" style={{ backgroundColor: meta.bg }} aria-hidden="true">
+        <Icon className="mv-risk-wash-icon size-24 text-white" />
       </div>
 
-      <div className="mt-4 flex flex-col gap-1.5">
+      <div className="mv-risk-reveal" style={{ animationDelay: "0.15s" }}>
+        <div className="relative overflow-hidden rounded-card p-6 text-white" style={{ backgroundColor: meta.bg }}>
+          <Icon className="absolute -right-4 -top-4 size-28 opacity-20" aria-hidden="true" />
+          <p className="text-support font-semibold uppercase tracking-wide">{t("risk.summary")}</p>
+          <p className="mt-1 text-display font-extrabold">{t(`risk.${visit.risk_level}`)}</p>
+          <p className="mt-2 text-body">{patient.name}</p>
+          {reads.length > 0 && <p className="mt-1 text-support opacity-90">{reads.join(" · ")}</p>}
+        </div>
+      </div>
+
+      <div className="mv-risk-reveal mt-4 flex flex-col gap-1.5" style={{ animationDelay: "0.4s" }}>
         {visit.reason_codes.map((c) => (
           <p key={c} className="flex items-start gap-2 text-body text-ink">
             <span className="mt-2 size-2 shrink-0 rounded-full" style={{ backgroundColor: meta.color }} aria-hidden="true" />
@@ -110,7 +120,7 @@ export default function RiskResultPage() {
         ))}
       </div>
 
-      <div className="card mt-4">
+      <div className="mv-risk-reveal card mt-4" style={{ animationDelay: "0.52s" }}>
         <p className="text-section font-extrabold">{t(`risk.${ADVICE_KEY[visit.advice_key]}`)}</p>
         <p className="mt-2 text-body text-neem-dark">
           {t("risk.nextVisit")}: {patient.next_visit_date ? formatDate(patient.next_visit_date, lng) : "—"}
@@ -118,7 +128,7 @@ export default function RiskResultPage() {
         <p className="mt-2 text-support text-neem-dark">{t("settings.disclaimer")}</p>
       </div>
 
-      <div className="mt-4 flex flex-col gap-3">
+      <div className="mv-risk-reveal mt-4 flex flex-col gap-3" style={{ animationDelay: "0.65s" }}>
         {hasVoiceFor(lng) ? (
           <BigButton variant="secondary" icon={Volume2} onClick={speakOut}>
             {t("risk.listen")}

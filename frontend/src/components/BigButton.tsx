@@ -38,7 +38,9 @@ export function BigButton({
   return (
     <button
       type={type}
-      className={`${VARIANTS[variant]} ${disabled ? "opacity-45" : ""} active:scale-[0.98] transition-transform duration-75 ${className}`}
+      // Press feedback comes from the shared .btn base (index.css), so every
+      // button in the family behaves the same — including reduced-motion.
+      className={`${VARIANTS[variant]} ${disabled ? "opacity-45" : ""} ${className}`}
       onClick={onClick}
       disabled={disabled}
       {...(dataAutofocus ? { "data-autofocus": true } : {})}
