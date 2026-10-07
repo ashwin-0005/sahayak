@@ -461,6 +461,12 @@ html.motion-pending .motion-slow {
   object-position: center;
   pointer-events: none;
 }
+
+@media (max-width: 640px) {
+  .vp-background {
+    object-position: top center;
+  }
+}
 .vp-screen::before {
   /* Vignette between the video and the content */
   content: "";
