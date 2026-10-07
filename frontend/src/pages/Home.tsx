@@ -28,7 +28,7 @@ import { getAllPatients, getAllVisits, getMeta, getPendingOutbox, setMeta } from
 import { lastRisk, overdueDays } from "../lib/records";
 import { TOUR_SEEN_KEY } from "../lib/tour";
 import { Tour } from "../components/Tour";
-import { useSync } from "../sync/useSync";
+import { useSync, useReloadOnSync } from "../sync/useSync";
 import { RISK_META } from "../lib/riskMeta";
 import { colorToken } from "../theme/tokens";
 import type { LucideIcon } from "lucide-react";
@@ -106,6 +106,10 @@ export default function HomePage() {
     void getSession().then(setSession);
     void load();
   }, []);
+
+  // Cold-start guard: the queue can mount before the first pull lands, then
+  // stay stale-empty — reload once a background sync settles.
+  useReloadOnSync(load);
 
   // Refresh the "waiting to sync" patient set whenever the outbox size changes
   // (rows are acked and removed after each successful sync).

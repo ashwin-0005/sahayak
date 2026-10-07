@@ -12,6 +12,7 @@ import { summarize, visitsByWeek } from "../lib/insights";
 import { formatNumber, todayUTC } from "../lib/dates";
 import { RISK_META } from "../lib/riskMeta";
 import { colorToken } from "../theme/tokens";
+import { useReloadOnSync } from "../sync/useSync";
 import type { Patient, RiskLevel, Visit } from "../types";
 
 const WEEKS = 7;
@@ -48,6 +49,14 @@ export default function InsightsPage() {
       setLoaded(true);
     })();
   }, []);
+
+  // Cold-start guard: reload once a background sync settles (see useReloadOnSync).
+  useReloadOnSync(() => {
+    void (async () => {
+      setPatients(await getAllPatients());
+      setVisits(await getAllVisits());
+    })();
+  });
 
   const stats = useMemo(() => summarize(patients, visits, today), [patients, visits, today]);
   const weeks = useMemo(() => visitsByWeek(visits, today, WEEKS), [visits, today]);

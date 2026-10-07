@@ -8,6 +8,7 @@ import { EmptyState } from "../components/EmptyState";
 import { PatientListSkeleton } from "../components/Skeleton";
 import { getAllPatients, getAllVisits } from "../db/repo";
 import { lastRisk, overdueDays } from "../lib/records";
+import { useReloadOnSync } from "../sync/useSync";
 import type { Condition, Patient, Visit } from "../types";
 
 const FILTERS: (Condition | "all")[] = ["all", "hypertension", "diabetes", "tb", "pregnancy"];
@@ -32,6 +33,14 @@ export default function PatientsPage() {
       setLoaded(true);
     })();
   }, []);
+
+  // Cold-start guard: reload once a background sync settles (see useReloadOnSync).
+  useReloadOnSync(() => {
+    void (async () => {
+      setPatients(await getAllPatients());
+      setVisits(await getAllVisits());
+    })();
+  });
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
