@@ -16,12 +16,15 @@ export interface AlertProps {
   children?: ReactNode;
 }
 
+// Tone fills come from the CSS tone classes (`.alert-danger` etc.) — frosted
+// light tints tuned for the dark canvas. Tailwind bg-* utilities would replace
+// the light background entirely and leave ink text on near-black.
 const TONE_BG: Record<AlertTone, string> = {
-  offline: "bg-mist/60",
-  danger: "bg-danger/10",
-  warning: "bg-warning/15",
-  info: "bg-info/10",
-  success: "bg-success/10"
+  offline: "alert-offline",
+  danger: "alert-danger",
+  warning: "alert-warning",
+  info: "alert-info",
+  success: "alert-success"
 };
 
 const TONE_ICON: Record<AlertTone, string> = {

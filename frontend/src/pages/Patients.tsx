@@ -7,7 +7,7 @@ import { PatientCard } from "../components/PatientCard";
 import { EmptyState } from "../components/EmptyState";
 import { PatientListSkeleton } from "../components/Skeleton";
 import { getAllPatients, getAllVisits } from "../db/repo";
-import { lastRisk } from "../lib/records";
+import { lastRisk, overdueDays } from "../lib/records";
 import type { Condition, Patient, Visit } from "../types";
 
 const FILTERS: (Condition | "all")[] = ["all", "hypertension", "diabetes", "tb", "pregnancy"];
@@ -19,6 +19,8 @@ export default function PatientsPage() {
   const [visits, setVisits] = useState<Visit[]>([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Condition | "all">("all");
+  const [showOverdue, setShowOverdue] = useState(false);
+  const [showUrgent, setShowUrgent] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -35,6 +37,15 @@ export default function PatientsPage() {
     const q = search.trim().toLowerCase();
     return patients
       .filter((p) => (filter === "all" ? true : p.condition === filter))
+      .filter((p) => {
+        if (!showOverdue) return true;
+        const od = overdueDays(p);
+        return od !== null && od > 0; // strictly overdue (today is not overdue)
+      })
+      .filter((p) => {
+        if (!showUrgent) return true;
+        return lastRisk(visits, p.id) === "urgent";
+      })
       .filter(
         (p) =>
           q === "" ||
@@ -42,7 +53,16 @@ export default function PatientsPage() {
           p.village.toLowerCase().includes(q)
       )
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [patients, search, filter]);
+  }, [patients, visits, search, filter, showOverdue, showUrgent]);
+
+  const emptyTitle = useMemo(() => {
+    const parts: string[] = [];
+    if (showUrgent) parts.push(t("patients.filterUrgent").toLowerCase());
+    if (showOverdue) parts.push(t("patients.filterOverdue").toLowerCase());
+    if (filter !== "all") parts.push(t(`condition.${filter}`).toLowerCase());
+    if (parts.length === 0) return t("patients.emptyTitle");
+    return t("patients.emptyFiltered", { filters: parts.join(" ") + " " });
+  }, [showUrgent, showOverdue, filter, t]);
 
   if (!loaded) {
     return (
@@ -53,9 +73,11 @@ export default function PatientsPage() {
           <Search className="size-5 text-neem" aria-hidden="true" />
           <span className="sr-only">{t("patients.search")}</span>
           <input
-            className="w-full bg-transparent outline-none"
-            placeholder={t("patients.searchPlaceholder")}
+            className="w-full bg-transparent text-ink outline-none"
+            value=""
+            readOnly
             disabled
+            placeholder={t("patients.searchPlaceholder")}
           />
         </label>
 
@@ -76,6 +98,12 @@ export default function PatientsPage() {
               {c === "all" ? t("patients.allConditions") : t(`condition.${c}`)}
             </button>
           ))}
+          <button type="button" disabled className="tag min-h-[48px] shrink-0 whitespace-nowrap bg-mist text-neem-dark opacity-50">
+            {t("patients.filterUrgent")}
+          </button>
+          <button type="button" disabled className="tag min-h-[48px] shrink-0 whitespace-nowrap bg-mist text-neem-dark opacity-50">
+            {t("patients.filterOverdue")}
+          </button>
         </div>
 
         <div className="mt-4 flex flex-col gap-3">
@@ -93,7 +121,7 @@ export default function PatientsPage() {
         <Search className="size-5 text-neem" aria-hidden="true" />
         <span className="sr-only">{t("patients.search")}</span>
         <input
-          className="w-full bg-transparent outline-none"
+          className="w-full bg-transparent text-ink outline-none"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t("patients.searchPlaceholder")}
@@ -106,32 +134,52 @@ export default function PatientsPage() {
         aria-label={t("patients.conditionFilter")}
       >
         {FILTERS.map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => setFilter(c)}
-              aria-pressed={filter === c}
-              className={`tag min-h-[48px] shrink-0 whitespace-nowrap ${
+          <button
+            key={c}
+            type="button"
+            onClick={() => setFilter(c)}
+            aria-pressed={filter === c}
+            className={`tag min-h-[48px] shrink-0 whitespace-nowrap ${
               filter === c ? "bg-neem text-white" : "bg-mist text-neem-dark"
             }`}
           >
             {c === "all" ? t("patients.allConditions") : t(`condition.${c}`)}
           </button>
         ))}
+        <button
+          type="button"
+          onClick={() => setShowUrgent((v) => !v)}
+          aria-pressed={showUrgent}
+          className={`tag min-h-[48px] shrink-0 whitespace-nowrap ${
+            showUrgent ? "bg-neem text-white" : "bg-mist text-neem-dark"
+          }`}
+        >
+          {t("patients.filterUrgent")}
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowOverdue((v) => !v)}
+          aria-pressed={showOverdue}
+          className={`tag min-h-[48px] shrink-0 whitespace-nowrap ${
+            showOverdue ? "bg-neem text-white" : "bg-mist text-neem-dark"
+          }`}
+        >
+          {t("patients.filterOverdue")}
+        </button>
       </div>
 
       <div className="mt-4 flex flex-col gap-3">
         {filtered.length === 0 ? (
           <EmptyState
             icon={FolderSearch}
-            title={t("patients.emptyTitle")}
+            title={emptyTitle}
             actionLabel={t("patients.emptyAction")}
             onAction={() => navigate("/patients/new")}
           />
         ) : (
           <>
             {filtered.length > 100 ? (
-              <p role="status" className="text-support text-neem-dark">
+              <p role="status" className="text-support text-white/70">
                 {t("patients.showingFirst", { count: 100, total: filtered.length })}
               </p>
             ) : null}

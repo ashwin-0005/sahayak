@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { startOfWeek, summarize, visitsByWeek } from "./insights";
+import { last7DaysStart, startOfWeek, summarize, visitsByWeek, visitsInLast7Days } from "./insights";
 import type { Patient, Visit } from "../types";
 
 const NOW = "2026-09-23T05:00:00Z";
@@ -96,7 +96,9 @@ describe("summarize", () => {
 
   it("buckets visit counts by the last 7 and 30 days", () => {
     const s = summarize(patients, visits, "2026-09-23");
-    expect(s.visitsLast7).toBe(2); // today + exactly 7 days ago
+    // Rolling window is today + the 6 prior days: today counts, exactly 7
+    // days ago (09-16) no longer does.
+    expect(s.visitsLast7).toBe(1);
     expect(s.visitsLast30).toBe(3); // adds the 13-days-ago visit
   });
 });
@@ -111,9 +113,10 @@ describe("visitsByWeek", () => {
     const weeks = visitsByWeek(visits, "2026-09-23", 7);
     expect(weeks).toHaveLength(7);
     expect(weeks[0].label).toBe("2026-08-10");
-    expect(weeks[6].label).toBe("2026-09-21");
+    // The trailing bar is the rolling 7-day window (09-17..09-23), not the
+    // calendar week: only the 09-23 visit falls inside it.
+    expect(weeks[6]).toEqual({ label: "2026-09-17", count: 1 });
     const counts: Record<string, number> = Object.fromEntries(weeks.map((w) => [w.label, w.count]));
-    expect(counts["2026-09-21"]).toBe(1);
     expect(counts["2026-09-14"]).toBe(1);
     expect(counts["2026-09-07"]).toBe(1);
     expect(weeks.reduce((n, w) => n + w.count, 0)).toBe(3);
@@ -123,5 +126,55 @@ describe("visitsByWeek", () => {
     const weeks = visitsByWeek([], "2026-09-23", 4);
     expect(weeks).toHaveLength(4);
     expect(weeks.every((w) => w.count === 0)).toBe(true);
+    expect(weeks[3].label).toBe("2026-09-17");
+  });
+
+  it("returns [] for zero weeks", () => {
+    expect(visitsByWeek([makeVisit("p1", NOW)], "2026-09-23", 0)).toEqual([]);
+  });
+
+  it("never renders two bars for the same range on Sundays", () => {
+    // On a Sunday the rolling window start IS the week's Monday; the Monday
+    // bucket must be skipped so the label appears exactly once.
+    const weeks = visitsByWeek([makeVisit("p1", "2026-09-20T05:00:00Z")], "2026-09-20", 7);
+    const labels = weeks.map((w) => w.label);
+    expect(new Set(labels).size).toBe(labels.length);
+    expect(weeks[6]).toEqual({ label: "2026-09-14", count: 1 });
+  });
+});
+
+describe("visitsInLast7Days", () => {
+  it("counts today through 6 days ago, excluding day 7 and future visits", () => {
+    const visits = [
+      makeVisit("p1", "2026-09-23T05:00:00Z"), // today
+      makeVisit("p1", "2026-09-17T05:00:00Z"), // exactly 6 days ago: in
+      makeVisit("p1", "2026-09-16T05:00:00Z"), // exactly 7 days ago: out
+      makeVisit("p1", "2026-09-24T05:00:00Z") // future: out
+    ];
+    expect(visitsInLast7Days(visits, "2026-09-23")).toBe(2);
+    expect(last7DaysStart("2026-09-23")).toBe("2026-09-17");
+  });
+});
+
+describe("stat tile and chart agree", () => {
+  const patients = [makePatient({ id: "p1" })];
+  const visits = [
+    makeVisit("p1", "2026-09-14T05:00:00Z"),
+    makeVisit("p1", "2026-09-19T05:00:00Z"),
+    makeVisit("p1", "2026-09-20T05:00:00Z"),
+    makeVisit("p1", "2026-09-21T05:00:00Z"),
+    makeVisit("p1", "2026-09-28T05:00:00Z") // future: never counted
+  ];
+
+  it.each([
+    // [today, expected rolling count]
+    ["2026-09-21", 3], // Monday: the old calendar-week bar would have said 1
+    ["2026-09-20", 3], // Sunday
+    ["2026-09-23", 3], // Wednesday
+    ["2026-09-27", 1] // Sunday: only the 09-21 visit is still inside
+  ] as [string, number][])("tile == last chart bar on %s", (today, expected) => {
+    expect(summarize(patients, visits, today).visitsLast7).toBe(expected);
+    const weeks = visitsByWeek(visits, today, 7);
+    expect(weeks[weeks.length - 1].count).toBe(expected);
   });
 });

@@ -13,15 +13,30 @@ export const languageLabel: Record<UILang, string> = {
   hi: "हिन्दी"
 };
 
+// jsdom/Node environments may not provide window.localStorage (Node >= 22
+// ships an experimental global that shadows it). The app only degrades the
+// language preference in that case — a miss is harmless.
+function getStoredLang(): string | null {
+  try {
+    return typeof localStorage === "undefined" ? null : localStorage.getItem(LANG_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
 function storedLang(): UILang {
-  const raw = localStorage.getItem(LANG_STORAGE_KEY);
+  const raw = getStoredLang();
   if (raw === "en" || raw === "hi") return raw;
   const nav = navigator.language ?? "";
   return SUPPORTED_LANGS.includes(nav.slice(0, 2) as UILang) ? (nav.slice(0, 2) as UILang) : "en";
 }
 
 export function setLanguage(lang: UILang): void {
-  localStorage.setItem(LANG_STORAGE_KEY, lang);
+  try {
+    if (typeof localStorage !== "undefined") localStorage.setItem(LANG_STORAGE_KEY, lang);
+  } catch {
+    // Storage unavailable (private mode / test env): keep the session language.
+  }
   void i18n.changeLanguage(lang);
 }
 

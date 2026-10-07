@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
@@ -24,8 +24,10 @@ import { BigButton } from "../components/BigButton";
 import { EmptyState } from "../components/EmptyState";
 import { DueListSkeleton, SummaryCardSkeleton } from "../components/Skeleton";
 import { getSession } from "../auth/auth";
-import { getAllPatients, getAllVisits, getPendingOutbox } from "../db/repo";
+import { getAllPatients, getAllVisits, getMeta, getPendingOutbox, setMeta } from "../db/repo";
 import { lastRisk, overdueDays } from "../lib/records";
+import { TOUR_SEEN_KEY } from "../lib/tour";
+import { Tour } from "../components/Tour";
 import { useSync } from "../sync/useSync";
 import { RISK_META } from "../lib/riskMeta";
 import { colorToken } from "../theme/tokens";
@@ -68,6 +70,37 @@ export default function HomePage() {
   const [filter, setFilter] = useState<FilterKey>("all");
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
+  const [showTour, setShowTour] = useState(false);
+  const syncRef = useRef<HTMLDivElement>(null);
+  const addFollowUpRef = useRef<HTMLDivElement>(null);
+  const [navEl, setNavEl] = useState<HTMLElement | null>(null);
+
+  // First-run tour: shown only once per device, tracked in Dexie meta (not localStorage).
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const seen = await getMeta(TOUR_SEEN_KEY);
+        if (!cancelled && !seen) setShowTour(true);
+      } catch {
+        // IndexedDB unavailable — skip tour rather than block the page.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Bottom nav is outside PageShell; capture it once the tour is active.
+  useEffect(() => {
+    if (!showTour) return;
+    setNavEl(document.querySelector<HTMLElement>("nav[aria-label]"));
+  }, [showTour]);
+
+  const dismissTour = () => {
+    setShowTour(false);
+    void setMeta(TOUR_SEEN_KEY, true).catch(() => undefined);
+  };
 
   useEffect(() => {
     void getSession().then(setSession);
@@ -180,6 +213,11 @@ export default function HomePage() {
     needsSync: { icon: CircleCheck, title: t("home.nothingSyncTitle"), body: t("home.nothingSyncBody") }
   };
 
+  const tourTargets = { sync: syncRef.current, addFollowUp: addFollowUpRef.current, nav: navEl } as Record<
+    "sync" | "addFollowUp" | "nav",
+    HTMLElement | null
+  >;
+
   const offline = !navigator.onLine || sync.status === "offline";
 
   const options: FilterOption<FilterKey>[] = [
@@ -192,10 +230,10 @@ export default function HomePage() {
   const header = (
     <header className="flex items-center justify-between">
       <div className="min-w-0">
-        <h1 className="truncate text-page font-extrabold text-ink">
+        <h1 className="truncate text-page font-extrabold text-white">
           {t("home.greeting", { name: session?.worker.name ?? "" })}
         </h1>
-        <p className="text-body text-neem-dark">{formatDay(todayUTC(), lng)}</p>
+        <p className="text-body text-white/70">{formatDay(todayUTC(), lng)}</p>
       </div>
       <UserRound className="size-9 shrink-0 text-neem" aria-hidden="true" />
     </header>
@@ -247,7 +285,7 @@ export default function HomePage() {
     <PageShell>
       {header}
 
-      <div className="mt-4">
+      <div ref={syncRef} className="mt-4">
         <SyncStatus onSynced={() => void load()} />
       </div>
 
@@ -268,7 +306,7 @@ export default function HomePage() {
         </div>
       ) : null}
 
-      <div className="mt-4">
+      <div ref={addFollowUpRef} className="mt-4">
         <BigButton icon={CirclePlus} className="w-full" onClick={() => navigate("/patients/new")}>
           {t("home.addFollowUp")}
         </BigButton>
@@ -322,18 +360,20 @@ export default function HomePage() {
           <BigButton variant="secondary" className="w-full" onClick={() => navigate("/patients")}>
             {t("home.seeAllPatients")}
           </BigButton>
-          <p className="mt-2 text-center text-support text-neem-dark">
+          <p className="mt-2 text-center text-support text-white/70">
             {t("home.showingFirst", { n: formatNumber(cappedTotal, lng) })}
           </p>
         </div>
       ) : null}
 
+      {showTour && loaded && navEl ? <Tour targets={tourTargets} onDone={dismissTour} /> : null}
+
       <details className="mt-5">
-        <summary className="flex w-fit cursor-pointer list-none items-center gap-1.5 text-support font-semibold text-neem-dark underline decoration-mist underline-offset-4">
+        <summary className="flex w-fit cursor-pointer list-none items-center gap-1.5 text-support font-semibold text-white/70 underline decoration-white/40 underline-offset-4 hover:text-white">
           <CircleHelp className="size-4" aria-hidden="true" />
           {t("home.legendTitle")}
         </summary>
-        <div className="mt-2 w-full rounded-card bg-mist/50 p-3">
+        <div className="mt-2 w-full rounded-card border border-white/50 bg-white/75 p-3 backdrop-blur-lg">
           <p className="text-support text-neem-dark">{t("home.legendHint")}</p>
           <ul className="mt-2 flex flex-col gap-2">
             {URGENCY_LEGEND.map(({ risk, instructKey }) => {

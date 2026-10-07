@@ -28,8 +28,8 @@ export function FollowUpGroup({ title, explain, icon: Icon, color, count, countC
           <Icon className="size-3.5 text-white" aria-hidden="true" />
         </span>
         <div className="min-w-0">
-          <h2 className="text-section font-extrabold leading-tight text-ink">{title}</h2>
-          {explain ? <p className="mt-0.5 text-support leading-snug text-neem-dark">{explain}</p> : null}
+          <h2 className="text-section font-extrabold leading-tight text-white">{title}</h2>
+          {explain ? <p className="mt-0.5 text-support leading-snug text-white/65">{explain}</p> : null}
         </div>
         {count !== undefined ? (
           <span className="ml-auto flex shrink-0 items-center gap-2" aria-label={`${title}: ${count}`}>

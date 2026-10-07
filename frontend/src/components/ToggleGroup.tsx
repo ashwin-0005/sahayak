@@ -70,7 +70,7 @@ export function ToggleGroup<V extends string>({
   return (
     <div role="group" aria-label={label} className={className}>
       {title ? (
-        <span aria-hidden="true" className="block text-body font-bold text-ink">
+        <span aria-hidden="true" className="block text-body font-bold text-white">
           {title}
         </span>
       ) : null}

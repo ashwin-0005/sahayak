@@ -22,7 +22,7 @@ const VARIANTS: Record<string, string> = {
   danger: "btn bg-danger text-white",
   // Quiet destructive: a cautious style for irreversible actions that should
   // read as low-key, not alarm. Same token family, softer presence.
-  dangerQuiet: "btn bg-danger/10 text-danger"
+  dangerQuiet: "btn bg-danger/10 text-[#ff8a80]"
 };
 
 export function BigButton({

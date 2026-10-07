@@ -39,7 +39,14 @@
     "unlockOffline": "You are offline. Enter your PIN to unlock.",
     "waking": "Waking up the server, this can take up to a minute.",
     "timeoutError": "The server is taking too long. Please try again.",
-    "languageLabel": "App language"
+    "languageLabel": "App language",
+    "install": "Download app",
+    "installed": "App installed",
+    "installIosTitle": "Install Sahayak on iPhone",
+    "installIosStep1": "Tap the Share button",
+    "installIosStep2": "Scroll down and tap \"Add to Home Screen\"",
+    "installIosStep3": "Tap \"Add\" to confirm",
+    "installIosShareIconAria": "iOS Share button icon"
   },
   "home": {
     "greeting": "Good day, {{name}}",
@@ -124,7 +131,10 @@
     "searchPlaceholder": "Search name or village",
     "conditionFilter": "Condition filter",
     "allConditions": "All",
+    "filterOverdue": "Overdue",
+    "filterUrgent": "Urgent",
     "emptyTitle": "No patients found",
+    "emptyFiltered": "No {{filters}}patients found",
     "emptyAction": "Register your first patient",
     "showingFirst": "Showing first {{count}} of {{total}} — refine your search."
   },
@@ -155,6 +165,14 @@
     "nextVisit": "Next visit {{date}}",
     "logVisit": "Log visit",
     "sendReminder": "Send reminder",
+    "shareSummary": "Share summary",
+    "summaryTitle": "Patient Summary",
+    "summaryPatientInfo": "Patient: {{name}}, {{age}} yrs, {{village}}",
+    "summaryCondition": "Condition: {{condition}}",
+    "summaryVisits": "Recent visits (up to 3):",
+    "summaryVisitLine": "• {{date}}: {{readings}} — {{risk}}",
+    "summaryNoVisits": "No visits recorded yet.",
+    "summaryCurrentRisk": "Current risk: {{risk}} ({{reason}})",
     "trendTitle": "Blood pressure trend",
     "sugarTrendTitle": "Sugar trend",
     "noTrend": "No recent readings yet",
@@ -295,6 +313,15 @@
     "increase": "Increase",
     "delete": "Delete"
   },
+  "tour": {
+    "sync": "This shows your sync status. When it says Synced, your data is safe on the server.",
+    "addFollowUp": "Tap here to add a new patient follow-up.",
+    "nav": "Use these tabs to switch between Today, Insights, Patients and Settings.",
+    "next": "Next",
+    "skip": "Skip tour",
+    "done": "Got it",
+    "step": "Step {{current}} of {{total}}"
+  },
   "landing": {
     "title": "Sahayak",
     "tagline": "Offline patient follow-up for community health workers",
@@ -307,6 +334,25 @@
     "demoTitle": "Demo workspace (synthetic data)",
     "demoId": "Demo ID: demo",
     "demoPin": "PIN: 0000",
-    "openLogin": "Open login with demo ID"
+    "openLogin": "Open login with demo ID",
+    "headline1": "Every follow-up,",
+    "headline2": "one clear signal.",
+    "copy1": "Your patients are scattered across paper registers",
+    "copy2": "and village memory. Sahayak brings them into one",
+    "copy3": "clear signal — so every follow-up is backed by data you trust.",
+    "cta": "Continue to login",
+    "tryDemo": "Try the demo",
+    "navOverview": "Overview",
+    "navDemo": "Try demo",
+    "navApp": "App",
+    "signIn": "Sign in",
+    "menuLabel": "Menu",
+    "closeMenu": "Close menu",
+    "brandAria": "Sahayak home",
+    "demoCardTitle": "Demo workspace",
+    "demoCardBody": "Synthetic patients, visits and risk — exactly like your real data.",
+    "demoCardId": "Worker ID: demo",
+    "demoCardPin": "PIN: 0000",
+    "openDemo": "Open login with demo ID"
   }
 }

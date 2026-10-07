@@ -57,7 +57,7 @@ export default function RiskResultPage() {
   if (checking) {
     return (
       <PageShell noNav>
-        <p role="status" className="mt-10 text-center text-body text-neem-dark">
+        <p role="status" className="mt-10 text-center text-body text-white/70">
           {t("common.loading")}
         </p>
       </PageShell>
@@ -113,7 +113,7 @@ export default function RiskResultPage() {
 
       <div className="mv-risk-reveal mt-4 flex flex-col gap-1.5" style={{ animationDelay: "0.4s" }}>
         {visit.reason_codes.map((c) => (
-          <p key={c} className="flex items-start gap-2 text-body text-ink">
+          <p key={c} className="flex items-start gap-2 text-body text-white">
             <span className="mt-2 size-2 shrink-0 rounded-full" style={{ backgroundColor: meta.color }} aria-hidden="true" />
             {t(`reason.${c}`)}
           </p>
@@ -134,7 +134,7 @@ export default function RiskResultPage() {
             {t("risk.listen")}
           </BigButton>
         ) : (
-          <p className="text-support text-neem-dark">{t("risk.listenMissing")}</p>
+          <p className="text-support text-white/70">{t("risk.listenMissing")}</p>
         )}
         <BigButton icon={Bell} onClick={() => navigate(`/reminders/${patient.id}`)}>
           {t("risk.sendReminder")}

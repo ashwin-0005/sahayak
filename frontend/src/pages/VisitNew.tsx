@@ -186,7 +186,7 @@ export default function VisitNewPage() {
   if (loading)
     return (
       <PageShell>
-        <p role="status" className="mt-10 text-center text-body text-neem-dark">
+        <p role="status" className="mt-10 text-center text-body text-white/70">
           {t("common.loading")}
         </p>
       </PageShell>
@@ -206,7 +206,7 @@ export default function VisitNewPage() {
           <X className="size-6" aria-hidden="true" />
         </button>
       </div>
-      <p className="text-body font-bold text-neem-dark">{patient.name}</p>
+      <p className="text-body font-bold text-white/80">{patient.name}</p>
 
       <div className="mt-5 flex flex-col gap-8">
         {(condition === "hypertension" || condition === "pregnancy") && (
@@ -239,7 +239,7 @@ export default function VisitNewPage() {
 
         {condition === "tb" && (
           <div role="group" aria-label={t("visit.missedDoses")}>
-            <span className="text-body font-bold text-ink" aria-hidden="true">
+            <span className="text-body font-bold text-white" aria-hidden="true">
               {t("visit.missedDoses")}
             </span>
             <div className="mt-2 flex min-h-[56px] items-center gap-3 rounded-button bg-white p-2">
@@ -251,7 +251,7 @@ export default function VisitNewPage() {
               >
                 −
               </button>
-              <span role="status" className="flex-1 text-center text-display font-extrabold tabular-nums">{missedDoses}</span>
+              <span role="status" className="flex-1 text-center text-display font-extrabold tabular-nums text-ink">{missedDoses}</span>
               <button
                 type="button"
                 className="num-key"
@@ -307,7 +307,7 @@ export default function VisitNewPage() {
               {listening ? t("visit.micListening") : t("visit.mic")}
             </button>
           ) : (
-            <p className="mt-2 text-support text-neem-dark">{t("visit.micUnsupported")}</p>
+            <p className="mt-2 text-support text-white/70">{t("visit.micUnsupported")}</p>
           )}
         </div>
 
@@ -315,7 +315,7 @@ export default function VisitNewPage() {
           {t("visit.save")}
         </BigButton>
         {tbEmpty ? (
-          <p role="status" className="text-support text-neem-dark">
+          <p role="status" className="text-support text-white/70">
             {t("visit.tbRequired")}
           </p>
         ) : null}

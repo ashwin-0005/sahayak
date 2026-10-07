@@ -71,8 +71,8 @@ export default function InsightsPage() {
     <PageShell>
       <header className="flex items-center justify-between">
         <div className="min-w-0">
-          <h1 className="truncate text-page font-extrabold text-ink">{t("insights.title")}</h1>
-          <p className="text-body text-neem-dark">{t("insights.subtitle")}</p>
+          <h1 className="truncate text-page font-extrabold text-white">{t("insights.title")}</h1>
+          <p className="text-body text-white/70">{t("insights.subtitle")}</p>
         </div>
         <ChartNoAxesColumn className="size-9 shrink-0 text-neem" aria-hidden="true" />
       </header>

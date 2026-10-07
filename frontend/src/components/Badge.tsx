@@ -16,7 +16,9 @@ interface BadgeProps {
 const TONE: Record<BadgeTone, string> = {
   neutral: "bg-mist text-neem-dark",
   info: "bg-info/15 text-neem-dark",
-  success: "bg-success/15 text-success",
+  // Success text stays deep green on the tint: text-success on its own
+  // 15% tint is only ~4.1:1 and fails WCAG AA.
+  success: "bg-success/15 text-neem-dark",
   warning: "bg-warning/15 text-ink",
   danger: "bg-danger/15 text-danger",
   "danger-solid": "bg-danger text-white"

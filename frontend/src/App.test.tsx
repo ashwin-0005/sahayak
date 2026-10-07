@@ -121,11 +121,13 @@ describe("demo flow: landing -> login -> dashboard -> logout", () => {
     );
 
     // Landing advertises only the isolated demo account — never worker IDs.
-    await user.click(screen.getByRole("button", { name: /Try the demo/i }));
+    expect(await screen.findByText(/Worker ID: demo/i)).toBeInTheDocument();
     expect(screen.queryByText(/asha001/)).toBeNull();
-    await user.click(screen.getByRole("button", { name: /Open login with demo ID/i }));
 
-    expect(screen.getByLabelText("Worker ID")).toHaveValue("demo");
+    // "Try the demo" goes straight to login with the demo ID pre-filled.
+    await user.click(screen.getByRole("button", { name: /Try the demo/i }));
+
+    expect(await screen.findByLabelText("Worker ID")).toHaveValue("demo");
     for (const d of ["0", "0", "0", "0"]) {
       await user.click(screen.getByRole("button", { name: d }));
     }

@@ -6,9 +6,10 @@ import type { ComponentType } from "react";
 import { PageShell } from "../components/PageShell";
 import { BigButton } from "../components/BigButton";
 import { ConsentSheet } from "../components/ConsentSheet";
+import { LanguageToggle } from "../components/LanguageToggle";
 import { createPatient } from "../db/repo";
 import { newId } from "../lib/ids";
-import type { Condition, Language, Patient, Sex } from "../types";
+import type { Condition, Patient, Sex } from "../types";
 
 const SEX_OPTIONS: { value: Sex; key: "sexFemale" | "sexMale" | "sexOther"; icon: ComponentType<{ className?: string }> }[] = [
   { value: "F", key: "sexFemale", icon: UserRound },
@@ -24,7 +25,7 @@ const CONDITION_OPTIONS: { value: Condition; icon: ComponentType<{ className?: s
 ];
 
 export default function PatientNewPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
@@ -33,7 +34,6 @@ export default function PatientNewPage() {
   const [village, setVillage] = useState("");
   const [phone, setPhone] = useState("");
   const [condition, setCondition] = useState<Condition>("hypertension");
-  const [language, setLanguage] = useState<Language>("hi");
   const [sheetOpen, setSheetOpen] = useState(false);
   const [consent, setConsent] = useState(false);
   const [fieldError, setFieldError] = useState<string | null>(null);
@@ -64,7 +64,7 @@ export default function PatientNewPage() {
       village: village.trim(),
       phone: phone || null,
       condition,
-      language,
+      language: (i18n.language ?? "en").startsWith("hi") ? "hi" : "en",
       consent_given: 1,
       consent_at: nowIso,
       next_visit_date: null,
@@ -93,7 +93,7 @@ export default function PatientNewPage() {
 
       <div className="mt-4 flex flex-col gap-5">
         <div>
-          <label htmlFor="pName" className="text-body font-bold text-ink">
+          <label htmlFor="pName" className="text-body font-bold text-white">
             {t("patientNew.name")}
           </label>
           <input
@@ -106,7 +106,7 @@ export default function PatientNewPage() {
 
         <div className="grid grid-cols-4 gap-3">
           <div>
-            <label htmlFor="pAge" className="text-body font-bold text-ink">
+            <label htmlFor="pAge" className="text-body font-bold text-white">
               {t("patientNew.age")}
             </label>
             <input
@@ -118,7 +118,7 @@ export default function PatientNewPage() {
             />
           </div>
           <div className="col-span-3" role="group" aria-label={t("patientNew.sex")}>
-            <span className="text-body font-bold text-ink" aria-hidden="true">{t("patientNew.sex")}</span>
+            <span className="text-body font-bold text-white" aria-hidden="true">{t("patientNew.sex")}</span>
             <div className="mt-1 grid grid-cols-3 gap-3">
               {SEX_OPTIONS.map(({ value, key, icon: Icon }) => (
                 <button
@@ -139,7 +139,7 @@ export default function PatientNewPage() {
         </div>
 
         <div>
-          <label htmlFor="pVillage" className="text-body font-bold text-ink">
+          <label htmlFor="pVillage" className="text-body font-bold text-white">
             {t("patientNew.village")}
           </label>
           <input
@@ -151,7 +151,7 @@ export default function PatientNewPage() {
         </div>
 
         <div>
-          <label htmlFor="pPhone" className="text-body font-bold text-ink">
+          <label htmlFor="pPhone" className="text-body font-bold text-white">
             {t("patientNew.phone")}
           </label>
           <input
@@ -165,7 +165,7 @@ export default function PatientNewPage() {
         </div>
 
         <div role="group" aria-label={t("patientNew.condition")}>
-          <span className="text-body font-bold text-ink" aria-hidden="true">{t("patientNew.condition")}</span>
+          <span className="text-body font-bold text-white" aria-hidden="true">{t("patientNew.condition")}</span>
           <div className="mt-1 grid grid-cols-2 gap-3">
             {CONDITION_OPTIONS.map(({ value, icon: Icon }) => (
               <button
@@ -187,24 +187,7 @@ export default function PatientNewPage() {
           </div>
         </div>
 
-        <div role="group" aria-label={t("patientNew.preferredLang")}>
-          <span className="text-body font-bold text-ink" aria-hidden="true">{t("patientNew.preferredLang")}</span>
-          <div className="mt-1 grid grid-cols-2 gap-3">
-            {(["en", "hi"] as Language[]).map((l) => (
-              <button
-                key={l}
-                type="button"
-                onClick={() => setLanguage(l)}
-                aria-pressed={language === l}
-                className={`min-h-[56px] rounded-button text-body font-bold ${
-                  language === l ? "bg-neem text-white" : "bg-mist text-neem-dark"
-                }`}
-              >
-                {l === "en" ? "English" : "हिन्दी"}
-              </button>
-            ))}
-          </div>
-        </div>
+        <LanguageToggle labelKey="patientNew.preferredLang" />
 
         <BigButton disabled={!basicOk} onClick={() => setSheetOpen(true)}>
           {t("patientNew.save")}

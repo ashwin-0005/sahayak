@@ -6,14 +6,14 @@ import { PageShell } from "../components/PageShell";
 import { BigButton } from "../components/BigButton";
 import { SyncStatus } from "../components/SyncStatus";
 import { Sheet } from "../components/Sheet";
+import { LanguageToggle } from "../components/LanguageToggle";
 import { getSession, lockApp, deleteSession } from "../auth/auth";
 import { clearQuarantine, discardQuarantine, getAllPatients, getPatient, getQuarantine, resetLocalData } from "../db/repo";
-import { setLanguage, type UILang } from "../i18n";
 import type { Session } from "../auth/auth";
 import type { QuarantineEntry } from "../types";
 
 export default function SettingsPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
   const [patientCount, setPatientCount] = useState(0);
@@ -57,8 +57,6 @@ export default function SettingsPage() {
     return () => window.removeEventListener("beforeinstallprompt", onInstall);
   }, []);
 
-  const lang = (i18n.language ?? "en").startsWith("hi") ? "hi" : "en";
-
   const doReset = async () => {
     await resetLocalData();
     setConfirming(false);
@@ -73,7 +71,7 @@ export default function SettingsPage() {
   if (!ready) {
     return (
       <PageShell>
-        <p role="status" className="mt-10 text-center text-body text-neem-dark">
+        <p role="status" className="mt-10 text-center text-body text-white/70">
           {t("common.loading")}
         </p>
       </PageShell>
@@ -88,28 +86,11 @@ export default function SettingsPage() {
         <SyncStatus />
       </div>
 
-      <p className="mt-4 text-body text-neem-dark">
+      <p className="mt-4 text-body text-white/70">
         {session?.worker.name} · {session?.workerId}
       </p>
 
-      <div className="mt-4">
-        <span className="text-body font-bold text-ink">{t("settings.language")}</span>
-        <div className="mt-1 grid grid-cols-2 gap-3">
-          {(["en", "hi"] as UILang[]).map((l) => (
-            <button
-              key={l}
-              type="button"
-              onClick={() => setLanguage(l)}
-              aria-pressed={lang === l}
-              className={`min-h-[56px] rounded-button text-body font-bold ${
-                lang === l ? "bg-neem text-white" : "bg-mist text-neem-dark"
-              }`}
-            >
-              {l === "en" ? "English" : "हिन्दी"}
-            </button>
-          ))}
-        </div>
-      </div>
+      <LanguageToggle labelKey="settings.language" />
 
       <div className="mt-4 card">
         <p className="text-body font-bold text-ink">{t("settings.about")}</p>

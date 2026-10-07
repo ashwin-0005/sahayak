@@ -13,7 +13,7 @@ interface EmptyStateProps {
 
 export function EmptyState({ icon: Icon, title, body, actionLabel, onAction, children }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-card bg-mist/50 p-8 text-center">
+    <div className="on-light flex flex-col items-center gap-3 rounded-card border border-white/50 bg-white/75 p-8 text-center backdrop-blur-lg">
       <Icon className="size-16 text-neem" aria-hidden="true" />
       <p className="text-section font-extrabold text-ink">{title}</p>
       {body ? <p className="text-body text-neem-dark">{body}</p> : null}

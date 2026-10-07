@@ -35,7 +35,7 @@ export function PatientCard({ patient, lastRiskLevel, onClick, waitingSync = fal
       to={onClick ? "#" : `/patients/${patient.id}`}
       onClick={onClick}
       className={`card block w-full text-left transition-transform active:scale-[0.99] ${railClass} ${
-        emphasized ? "border-urgent/60 bg-urgent/5 shadow-raised" : ""
+        emphasized ? "card-emphasized border-urgent/60 shadow-raised" : ""
       }`}
     >
       <div className="flex items-start justify-between gap-3">

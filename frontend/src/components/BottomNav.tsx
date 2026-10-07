@@ -21,7 +21,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label={t("a11y.navPrimary")}
-      className="fixed inset-x-0 bottom-0 z-40 mx-auto h-16 max-w-[480px] border-t border-mist bg-paper"
+      className="fixed inset-x-0 bottom-0 z-40 mx-auto h-16 max-w-[480px] border-t border-white/12 bg-night/80 backdrop-blur-xl"
     >
       <ul className="grid h-full grid-cols-5">
         {NAV_ITEMS.map(({ to, key, icon: Icon, end }) => (
@@ -30,8 +30,8 @@ export function BottomNav() {
               to={to}
               end={end}
               className={({ isActive }) =>
-                `flex h-16 flex-col items-center justify-center gap-0.5 text-support font-semibold ${
-                  isActive ? "text-neem" : "text-neem-dark"
+                `flex h-16 flex-col items-center justify-center gap-0.5 text-support font-semibold transition-colors ${
+                  isActive ? "text-white" : "text-white/55"
                 }`
               }
             >

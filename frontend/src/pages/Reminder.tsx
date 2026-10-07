@@ -106,10 +106,10 @@ export default function ReminderPage() {
           <X className="size-6" aria-hidden="true" />
         </button>
       </div>
-      <p className="text-body font-bold text-neem-dark">{patient.name}</p>
+      <p className="text-body font-bold text-white/80">{patient.name}</p>
 
       <div className="mt-4" role="group" aria-label={t("reminder.language")}>
-        <span className="text-body font-bold text-ink" aria-hidden="true">{t("reminder.language")}</span>
+        <span className="text-body font-bold text-white" aria-hidden="true">{t("reminder.language")}</span>
         <div className="mt-1 grid grid-cols-2 gap-3">
           {(["en", "hi"] as Language[]).map((l) => (
             <button
@@ -128,7 +128,7 @@ export default function ReminderPage() {
       </div>
 
       <div className="mt-4">
-        <label htmlFor="msg" className="text-body font-bold text-ink">
+        <label htmlFor="msg" className="text-body font-bold text-white">
           {t("reminder.messageLabel")}
         </label>
         <textarea
@@ -158,9 +158,9 @@ export default function ReminderPage() {
         </BigButton>
       </div>
 
-      <p className="mt-4 text-support text-neem-dark">{t("reminder.shareNotice")}</p>
+      <p className="mt-4 text-support text-white/70">{t("reminder.shareNotice")}</p>
 
-      <p className="mt-4 text-support text-neem-dark">{t("settings.disclaimer")}</p>
+      <p className="mt-4 text-support text-white/70">{t("settings.disclaimer")}</p>
 
       {toast ? <Toast message={t("reminder.copied")} onDone={() => setToast(false)} /> : null}
     </PageShell>

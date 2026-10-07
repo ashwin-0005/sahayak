@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
-import { CalendarPlus, Bell, X, Plus, CalendarClock } from "lucide-react";
+import { CalendarPlus, Bell, X, Plus, CalendarClock, Share2, Copy, MessageCircle } from "lucide-react";
 import {
   CartesianGrid,
   Legend,
@@ -18,8 +18,11 @@ import { BigButton } from "../components/BigButton";
 import { ConditionBadge } from "../components/ConditionBadge";
 import { RiskBanner } from "../components/RiskBanner";
 import { EmptyState } from "../components/EmptyState";
+import { Sheet } from "../components/Sheet";
+import { Toast } from "../components/Toast";
 import { getPatient, getVisitsForPatient } from "../db/repo";
 import { lastRisk, lastVisit } from "../lib/records";
+import { buildPatientSummary } from "../lib/summary";
 import { formatDate, formatTime } from "../lib/dates";
 import { colorToken } from "../theme/tokens";
 import type { Patient, Visit } from "../types";
@@ -31,6 +34,9 @@ export default function PatientDetailPage() {
   const [patient, setPatient] = useState<Patient | null>(null);
   const [visits, setVisits] = useState<Visit[]>([]);
   const [loading, setLoading] = useState(true);
+  const [shareSheetOpen, setShareSheetOpen] = useState(false);
+  const [summaryText, setSummaryText] = useState("");
+  const [toast, setToast] = useState(false);
 
   useEffect(() => {
     void (async () => {
@@ -40,6 +46,24 @@ export default function PatientDetailPage() {
       setLoading(false);
     })();
   }, [id]);
+
+  const openShareSheet = () => {
+    const lng = (i18n.language ?? "en").startsWith("hi") ? "hi" : "en";
+    const summary = buildPatientSummary(patient!, visits, lng);
+    setSummaryText(summary);
+    setShareSheetOpen(true);
+  };
+
+  const copySummary = async () => {
+    await navigator.clipboard.writeText(summaryText);
+    setToast(true);
+  };
+
+  const shareViaWhatsApp = () => {
+    if (!patient?.phone) return;
+    const digits = patient.phone.replace(/\D/g, "");
+    window.open(`https://wa.me/${digits}?text=${encodeURIComponent(summaryText)}`, "_blank", "noopener");
+  };
 
   const showBp = patient?.condition === "hypertension" || patient?.condition === "pregnancy";
   const showSugar = patient?.condition === "diabetes";
@@ -85,12 +109,12 @@ export default function PatientDetailPage() {
   return (
     <PageShell>
       <div className="flex items-center justify-between">
-        <h1 className="text-page font-extrabold text-ink">{patient.name}</h1>
+        <h1 className="text-page font-extrabold text-white">{patient.name}</h1>
         <button className="btn-ghost min-h-[48px] px-3" onClick={() => navigate(-1)} aria-label={t("common.back")}>
           <X className="size-6" aria-hidden="true" />
         </button>
       </div>
-      <p className="text-body text-neem-dark">
+      <p className="text-body text-white/70">
         {patient.age}, {patient.village}
       </p>
       <div className="mt-2 flex items-center gap-2">
@@ -98,7 +122,7 @@ export default function PatientDetailPage() {
       </div>
 
       {patient.next_visit_date && (
-        <p className="mt-3 flex items-center gap-1.5 text-body font-semibold text-neem-dark">
+        <p className="mt-3 flex items-center gap-1.5 text-body font-semibold text-white/70">
           <CalendarClock className="size-5" aria-hidden="true" />
           {t("detail.nextVisit", { date: formatDate(patient.next_visit_date, i18n.language === "hi" ? "hi" : "en") })}
         </p>
@@ -110,12 +134,15 @@ export default function PatientDetailPage() {
         </div>
       ) : null}
 
-      <div className="mt-5 grid grid-cols-2 gap-3">
+      <div className="mt-5 grid grid-cols-3 gap-3">
         <BigButton variant="primary" icon={Plus} onClick={() => navigate(`/visits/${patient.id}/new`)}>
           {t("detail.logVisit")}
         </BigButton>
         <BigButton variant="secondary" icon={Bell} onClick={() => navigate(`/reminders/${patient.id}`)}>
           {t("detail.sendReminder")}
+        </BigButton>
+        <BigButton variant="secondary" icon={Share2} onClick={openShareSheet}>
+          {t("detail.shareSummary")}
         </BigButton>
       </div>
 
@@ -165,7 +192,7 @@ export default function PatientDetailPage() {
       <section className="mt-6">
         <h2 className="text-section font-extrabold">{t("detail.visitsTitle")}</h2>
         {visits.length > 50 ? (
-          <p role="status" className="mt-1 text-support text-neem-dark">
+          <p role="status" className="mt-1 text-support text-white/70">
             {t("detail.showingRecent", { count: 50, total: visits.length })}
           </p>
         ) : null}
@@ -196,7 +223,7 @@ export default function PatientDetailPage() {
                         v.risk_level === "urgent"
                           ? "bg-urgent text-white"
                           : v.risk_level === "clinic"
-                            ? "bg-clinic text-ink"
+                            ? "bg-clinic text-white"
                             : "bg-home text-white"
                       }`}
                     >
@@ -222,6 +249,39 @@ export default function PatientDetailPage() {
           )}
         </div>
       </section>
+
+      <Sheet
+        open={shareSheetOpen}
+        onClose={() => setShareSheetOpen(false)}
+        ariaLabel={t("detail.shareSummary")}
+        describedBy="summary-text"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-section font-extrabold">{t("detail.shareSummary")}</h2>
+        </div>
+        <textarea
+          id="summary-text"
+          rows={10}
+          readOnly
+          className="w-full rounded-button border border-mist bg-white px-4 py-3 text-body font-mukta"
+          value={summaryText}
+        />
+        <div className="mt-4 flex flex-col gap-3">
+          <BigButton icon={Copy} onClick={copySummary}>
+            {t("detail.copyClipboard")}
+          </BigButton>
+          <BigButton icon={MessageCircle} disabled={!patient?.phone} onClick={shareViaWhatsApp}>
+            {t("detail.shareWhatsApp")}
+          </BigButton>
+        </div>
+        {!patient?.phone && (
+          <p className="mt-3 text-support text-neem-dark">{t("reminder.noPhone")}</p>
+        )}
+      </Sheet>
+
+      {toast ? (
+        <Toast message={t("detail.copied")} onDone={() => setToast(false)} />
+      ) : null}
     </PageShell>
   );
 }

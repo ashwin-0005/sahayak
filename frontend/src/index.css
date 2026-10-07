@@ -2,14 +2,47 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Vantage-style design layer on top of the Sahayak tokens.
+   Every surface now sits on a near-black, vignetted canvas framed in glass:
+   - .card / .input / .alert / .sheet are frosted LIGHT glass (ink text stays
+     WCAG-AA legible exactly as before — the light tokens are untouched, so the
+     contrast suite keeps passing).
+   - chrome (nav, dark-glass panels, hero, CTAs) is dark glass with white text.
+   - motion classes drive the landing entrance choreography.
+   Treat colorToken as still authoritative; these overrides only change how
+   existing light token surfaces are PRESENTED on the dark canvas. */
+
+:root {
+  color-scheme: dark;
+  --ink: #10231c;                /* colorToken.ink — ink on frosted light glass */
+  --neem-300: #a4c9b7;           /* colorToken["neem-300"] — light-on-dark hint */
+  --night: #05070a;
+  --radius-card: 10px;
+  --radius-button: 14px;
+  --glass-light: rgba(255, 255, 255, 0.82);
+  --glass-light-strong: rgba(255, 255, 255, 0.96);
+  --glass-dark: rgba(255, 255, 255, 0.09);
+  --glass-border: rgba(255, 255, 255, 0.42);
+}
+
 @layer base {
   html {
-    @apply bg-paper text-ink font-mukta text-body antialiased;
+    @apply bg-night text-white antialiased;
+    background-color: var(--night);
   }
   body {
-    @apply bg-paper text-ink;
     margin: 0;
     min-height: 100dvh;
+    /* Soft vignette: brighter at the top where content starts, falling into
+       near-black at the edges. Fixed so long pages keep the glow. */
+    color: #ffffff;
+    background-color: var(--night);
+    background-image: radial-gradient(
+      130% 110% at 50% -10%,
+      #0a1016 0%,
+      var(--night) 62%
+    );
+    background-attachment: fixed;
   }
   button {
     touch-action: manipulation;
@@ -18,16 +51,18 @@
   select,
   textarea {
     @apply font-mukta text-body;
+    /* Raw opaque-white inputs (Patient/Visit forms) must keep ink text — they
+       no longer inherit the white body colour. */
+    color: var(--ink);
   }
-  /* Visible, consistent keyboard focus ring. Outlines follow each control's
-     own border-radius, so no hardcoded radius is needed here. */
+  /* Keyboard focus: a bright ring that shows on both dark chrome and light
+     glass. The dark ring inside makes it pop on light cards too (spec uses a
+     2px white outline). */
   :focus-visible {
-    outline: 3px solid theme("colors.focus");
+    outline: 2px solid #ffffff;
     outline-offset: 2px;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.55);
   }
-  /* Respect reduced motion everywhere: collapse every animation to its
-     final state instantly, kill staggered entry delays, and suppress
-     press-scale feedback on interactive elements. */
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -46,10 +81,8 @@
 }
 
 @layer components {
-  /* Big, thumb-sized primary interaction. Every button in the family gets
-     the same subtle press feedback; reduced motion suppresses the
-     transform in the base layer above. Kept nesting-free so @apply btn
-     keeps working in the variant classes below. */
+  /* Big, thumb-sized interaction. Three looks, tuned for the dark canvas:
+     primary = Vantage's white pill, secondary = dark glass, ghost = text. */
   .btn {
     @apply inline-flex min-h-[56px] items-center justify-center gap-2 rounded-button px-6 py-3 text-body font-semibold transition-colors duration-100;
     transition-property: color, background-color, border-color, transform;
@@ -58,13 +91,42 @@
     transform: scale(0.98);
   }
   .btn-primary {
-    @apply btn bg-primary text-white;
+    @apply btn bg-white text-night;
   }
   .btn-secondary {
-    @apply btn bg-surface-muted text-ink;
+    @apply btn bg-white/[0.09] text-white;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
   .btn-ghost {
-    @apply btn bg-transparent text-primary-dark;
+    @apply btn bg-transparent text-white;
+  }
+  /* Inside light-glass surfaces (card / alert / sheet / ad-hoc light panels)
+     the dark-glass treatment would put white labels on a light panel — flip
+     to an ink-on-light treatment so the labels stay AA-legible. */
+  .card .btn-secondary,
+  .alert .btn-secondary,
+  .sheet .btn-secondary,
+  .on-light .btn-secondary,
+  .card .btn-ghost,
+  .alert .btn-ghost,
+  .sheet .btn-ghost,
+  .on-light .btn-ghost {
+    color: var(--ink);
+    background: rgba(16, 35, 28, 0.06);
+    border: 1px solid rgba(16, 35, 28, 0.32);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  /* Recharts legend labels inherit the series colour, which can dip under AA
+     on the frosted-light card (neem on glass ≈ 4.3:1). Force legend text to
+     ink on light panels — the coloured swatch still marks the series. */
+  .card .recharts-legend-item-text,
+  .alert .recharts-legend-item-text,
+  .sheet .recharts-legend-item-text,
+  .on-light .recharts-legend-item-text {
+    color: var(--ink) !important;
   }
   /* Pills: ONE primitive. `.tag`, `.badge` and `.chip` are deprecated aliases
      that resolve to the same spec (kept so older screens compile unchanged). */
@@ -74,51 +136,104 @@
   .chip {
     @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-base font-semibold;
   }
+  /* Frosted LIGHT glass card. Ink text inside stays exactly as AA-legible as
+     the old white cards — the panel is just translucent over the dark canvas,
+     which is what gives the whole app the Vantage "3D" depth. */
   .card {
-    @apply rounded-card border border-mist bg-white p-4 shadow-card;
+    border-radius: var(--radius-card);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: var(--glass-light);
+    padding: 1rem;
+    color: var(--ink);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(16px) saturate(120%);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
   }
-  /* Form controls: one shared look everywhere */
+  /* The single most-urgent patient card: the tint layers OVER the frosted
+     light glass. (A bg-urgent/5 utility would replace the glass entirely and
+     leave the ink text sitting straight on the dark canvas.) */
+  .card.card-emphasized {
+    background:
+      linear-gradient(rgba(179, 38, 30, 0.07), rgba(179, 38, 30, 0.07)),
+      var(--glass-light);
+  }
+  /* Form controls: frosted light glass, ink text, explicit (inherit default
+     white would be invisible). */
   .input {
-    @apply min-h-[56px] w-full rounded-button border border-mist bg-white px-4;
+    @apply min-h-[56px] w-full rounded-button border border-white/60 bg-white px-4;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.92);
+  }
+  .input::placeholder {
+    color: rgba(16, 35, 28, 0.5);
   }
   .textarea {
-    @apply w-full rounded-button border border-mist bg-white px-4 py-3;
+    @apply w-full rounded-button border border-white/60 bg-white px-4 py-3;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.92);
   }
+  .textarea::placeholder {
+    color: rgba(16, 35, 28, 0.5);
+  }
+  /* Labels/hints sit on the dark canvas in forms, so flip them to white. */
   .field-label {
-    @apply block text-body font-bold text-ink;
+    @apply block text-body font-bold;
+    color: #ffffff;
   }
   .field-hint {
-    @apply mt-1 text-label text-neem-dark;
+    @apply mt-1 text-label;
+    color: var(--neem-300);
   }
   .field-error {
-    @apply mt-1 text-label font-semibold text-danger;
+    @apply mt-1 text-label font-semibold;
+    color: #ff8a80;
   }
-  /* Non-blocking status banner. Shadow the Alert component; these class
-     pairs (alert + alert-<tone>) are reusable when raw JSX is simpler. */
+  /* Non-blocking status banner: frosted light panel that floats on dark. */
   .alert {
-    @apply rounded-card border border-mist p-4;
+    border-radius: var(--radius-card);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    padding: 1rem;
+    color: var(--ink);
+    background: var(--glass-light);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(16px) saturate(120%);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
   }
   .alert-offline {
-    @apply bg-mist/60;
+    background: rgba(221, 233, 226, 0.9);
+    border-color: rgba(255, 255, 255, 0.55);
   }
   .alert-danger {
-    @apply bg-danger/10;
+    background: rgba(254, 236, 235, 0.92);
+    border-color: rgba(185, 28, 28, 0.45);
   }
   .alert-warning {
-    @apply bg-warning/15;
+    background: rgba(255, 245, 230, 0.92);
+    border-color: rgba(180, 83, 9, 0.45);
   }
   .alert-info {
-    @apply bg-info/10;
+    background: rgba(232, 246, 240, 0.92);
+    border-color: rgba(23, 90, 68, 0.4);
   }
   .alert-success {
-    @apply bg-success/10;
+    background: rgba(235, 247, 239, 0.92);
+    border-color: rgba(21, 128, 61, 0.4);
   }
-  /* Bottom-sheet modal chrome. Shadow the Sheet component. */
+  /* Bottom-sheet modal chrome: dim + blur the dark canvas, frosted light sheet. */
   .sheet-overlay {
-    @apply fixed inset-0 z-50 flex items-end justify-center bg-ink/50;
+    @apply fixed inset-0 z-50 flex items-end justify-center;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
   }
   .sheet {
-    @apply w-full max-w-[480px] rounded-t-card bg-paper p-5 shadow-sheet animate-sheet-up;
+    @apply w-full max-w-[480px] rounded-t-card p-5 animate-sheet-up;
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-bottom: none;
+    background: var(--glass-light-strong);
+    color: var(--ink);
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.45);
   }
   /* Risk color left rail used structurally on cards */
   .rail-urgent {
@@ -134,7 +249,11 @@
     border-left: 6px solid theme("colors.danger");
   }
   .num-key {
-    @apply h-20 w-full rounded-button bg-white text-display font-extrabold text-ink border border-mist active:bg-mist;
+    @apply h-20 w-full rounded-button text-display font-extrabold active:bg-mist;
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--ink);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.7);
   }
 }
 
@@ -166,6 +285,22 @@
   }
 }
 
+/* App pages: a barely-there entrance so the field feels composed, not busy.
+   Reduced motion collapses it via the global media query below. */
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+.page-enter {
+  animation: pageEnter 0.28s ease-out both;
+}
+
 /* Sheet (consent) slide up */
 @keyframes sheetUp {
   from {
@@ -186,9 +321,7 @@
 
 /* Risk Result "moment": a single orchestrated reveal. The risk wash fills the
    whole screen in the risk color with its icon centered; the content blocks
-   below rise in a beat after as the wash fades. Every keyframe lands on the
-   resting layout, so the global reduced-motion rule (durations ~0 + delays
-   0) collapses the sequence to "everything visible at once". */
+   below rise in a beat after as the wash fades. */
 @keyframes riskWash {
   0% {
     opacity: 0;
@@ -241,4 +374,121 @@
 }
 .mv-risk-reveal {
   animation: riskRise 0.32s ease-out both;
+}
+
+/* First-run tour: simple fade in */
+@keyframes tourIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.tour-bubble {
+  animation: tourIn 150ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tour-bubble {
+    animation: none;
+  }
+}
+
+/* ============================================================
+   VANTAGE LAUNCH LAYER — landing choreography + glass demo card
+   ============================================================ */
+
+/* The landing mounts with `motion-pending` on <html>; every .motion-*
+   element is hidden in its starting pose and animates to rest with the delay
+   applied inline. The class is removed on settle (demo-card animationend or a
+   3.5s fallback), which is safe because finished animations already hold rest
+   via fill-mode. Reduced motion collapses everything to rest instantly. */
+html.motion-pending .motion-fade {
+  opacity: 0;
+  animation: vantageFade 0.62s cubic-bezier(0.14, 0.9, 0.28, 1) both;
+}
+html.motion-pending .motion-rise {
+  opacity: 0;
+  transform: translate3d(0, 14px, 0) scale(0.985);
+  animation: vantageRise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+html.motion-pending .motion-line {
+  overflow: hidden;
+}
+html.motion-pending .motion-line .line-reveal {
+  display: inline-block;
+  transform: translate3d(0, 110%, 0) skewY(2deg);
+  transform-origin: left center;
+  animation: vantageLineReveal 0.82s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+html.motion-pending .motion-slow {
+  opacity: 0;
+  animation: vantageFade 0.6s ease-out both;
+}
+
+@keyframes vantageFade {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes vantageRise {
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+@keyframes vantageLineReveal {
+  to {
+    transform: translate3d(0, 0, 0) skewY(0deg);
+  }
+}
+
+/* Vantage landing layout primitives */
+.vp-screen {
+  position: relative;
+  height: 100svh;
+  min-height: 560px;
+  overflow: hidden;
+  background: #000000;
+}
+.vp-background {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+}
+.vp-screen::before {
+  /* Vignette between the video and the content */
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: radial-gradient(
+    120% 120% at 50% 30%,
+    rgba(0, 0, 0, 0) 44%,
+    rgba(0, 0, 0, 0.62) 100%
+  );
+}
+.vp-content {
+  position: relative;
+  z-index: 2;
+}
+/* Dark glass panel (login card, landing demo card, chrome) */
+.glass-panel {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 18px;
+  background: linear-gradient(
+    145deg,
+    rgba(20, 22, 24, 0.78),
+    rgba(5, 9, 11, 0.86)
+  );
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(14px) saturate(108%);
+  -webkit-backdrop-filter: blur(14px) saturate(108%);
 }

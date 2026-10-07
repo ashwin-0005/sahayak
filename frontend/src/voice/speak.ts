@@ -37,14 +37,21 @@ export function hasVoiceFor(lang: "hi" | "en"): boolean {
 
 export function speak(text: string, lang: "hi" | "en"): boolean {
   if (typeof speechSynthesis === "undefined") return false;
-  const voice = voiceFor(lang);
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = lang === "hi" ? "hi-IN" : "en-IN";
-  if (voice) utterance.voice = voice;
-  utterance.rate = 0.95;
-  speechSynthesis.cancel();
-  speechSynthesis.speak(utterance);
-  return true;
+  try {
+    const voice = voiceFor(lang);
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang === "hi" ? "hi-IN" : "en-IN";
+    // A mismatched voice object (or a browser quirk) must never throw up
+    // into the caller: speech is best-effort, and the Risk Result screen
+    // auto-speaks on mount, so a throw here would blank that screen.
+    if (voice) utterance.voice = voice;
+    utterance.rate = 0.95;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(utterance);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function stopSpeaking(): void {

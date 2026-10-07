@@ -18,7 +18,7 @@ interface FilterTabsProps<K extends string> {
 // every target is 52px tall for thumb-sized use in the field.
 export function FilterTabs<K extends string>({ options, value, onChange, label }: FilterTabsProps<K>) {
   return (
-    <div role="group" aria-label={label} className="grid grid-cols-4 gap-1.5 rounded-button bg-mist/60 p-1.5">
+    <div role="group" aria-label={label} className="grid grid-cols-4 gap-1.5 rounded-button border border-white/15 bg-white/[0.08] p-1.5 backdrop-blur-md">
       {options.map((opt) => {
         const active = opt.key === value;
         return (
@@ -30,10 +30,10 @@ export function FilterTabs<K extends string>({ options, value, onChange, label }
             className={`flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-button px-1 py-1.5 text-center transition-colors duration-100 ${
               active
                 ? "bg-white text-neem shadow-raised"
-                : "text-neem-dark active:bg-white/70"
+                : "text-white/60 active:bg-white/15"
             }`}
           >
-            <span className={`text-body font-extrabold leading-none tabular-nums ${active ? "text-neem" : "text-ink"}`}>
+            <span className={`text-body font-extrabold leading-none tabular-nums ${active ? "text-neem" : "text-white/80"}`}>
               {opt.count}
             </span>
             <span className="text-support font-bold leading-tight">{opt.label}</span>
