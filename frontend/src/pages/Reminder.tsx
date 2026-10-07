@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { Copy, FolderSearch, MessageCircle, Smartphone, X } from "lucide-react";
-import { PageShell } from "../components/PageShell";
+import { VantagePageShell } from "../components/VantagePageShell";
 import { BigButton } from "../components/BigButton";
 import { EmptyState } from "../components/EmptyState";
 import { Toast } from "../components/Toast";
@@ -61,24 +61,24 @@ export default function ReminderPage() {
 
   if (!loaded) {
     return (
-      <PageShell>
-        <p role="status" className="mt-10 text-center text-body text-neem-dark">
+      <VantagePageShell>
+        <p role="status" className="mt-10 text-center text-body text-white/70 motion-fade" style={{ animationDelay: "180ms" }}>
           {t("common.loading")}
         </p>
-      </PageShell>
+      </VantagePageShell>
     );
   }
 
   if (!patient) {
     return (
-      <PageShell>
+      <VantagePageShell>
         <EmptyState
           icon={FolderSearch}
           title={t("patients.emptyTitle")}
           actionLabel={t("common.back")}
           onAction={() => navigate(-1)}
         />
-      </PageShell>
+      </VantagePageShell>
     );
   }
 
@@ -87,8 +87,6 @@ export default function ReminderPage() {
     setToast(true);
   };
 
-  // WhatsApp/SMS addressing needs digits only — a stored "+91 98765 00000"
-  // would otherwise produce a dead link (backend strips the same way).
   const phoneDigits = (patient?.phone ?? "").replace(/\D/g, "");
 
   const shareWa = () =>
@@ -99,16 +97,16 @@ export default function ReminderPage() {
   };
 
   return (
-    <PageShell>
-      <div className="flex items-center justify-between">
-        <h1 className="text-page font-extrabold">{t("reminder.title")}</h1>
+    <VantagePageShell>
+      <div className="motion-fade flex items-center justify-between" style={{ animationDelay: "180ms" }}>
+        <h1 className="text-page font-extrabold text-white">{t("reminder.title")}</h1>
         <button className="btn-ghost min-h-[48px] px-3" onClick={() => navigate(-1)} aria-label={t("common.back")}>
           <X className="size-6" aria-hidden="true" />
         </button>
       </div>
-      <p className="text-body font-bold text-white/80">{patient.name}</p>
+      <p className="motion-fade text-body font-bold text-white/80" style={{ animationDelay: "220ms" }}>{patient.name}</p>
 
-      <div className="mt-4" role="group" aria-label={t("reminder.language")}>
+      <div className="mt-4 motion-fade" role="group" aria-label={t("reminder.language")} style={{ animationDelay: "260ms" }}>
         <span className="text-body font-bold text-white" aria-hidden="true">{t("reminder.language")}</span>
         <div className="mt-1 grid grid-cols-2 gap-3">
           {(["en", "hi"] as Language[]).map((l) => (
@@ -127,26 +125,26 @@ export default function ReminderPage() {
         </div>
       </div>
 
-      <div className="mt-4">
+      <div className="mt-4 motion-rise" style={{ animationDelay: "300ms" }}>
         <label htmlFor="msg" className="text-body font-bold text-white">
           {t("reminder.messageLabel")}
         </label>
         <textarea
           id="msg"
           rows={6}
-          className="mt-1 w-full rounded-button border border-mist bg-white px-4 py-3"
+          className="mt-1 textarea"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
         />
       </div>
 
       {!patient.phone ? (
-        <p role="alert" className="mt-3 text-body font-bold text-danger">
+        <p role="alert" className="mt-3 motion-fade text-body font-bold text-danger" style={{ animationDelay: "340ms" }}>
           {t("reminder.noPhone")}
         </p>
       ) : null}
 
-      <div className="mt-4 flex flex-col gap-3">
+      <div className="mt-4 motion-rise flex flex-col gap-3" style={{ animationDelay: "380ms" }}>
         <BigButton variant="secondary" icon={Copy} onClick={() => void copy()}>
           {t("reminder.copy")}
         </BigButton>
@@ -158,11 +156,10 @@ export default function ReminderPage() {
         </BigButton>
       </div>
 
-      <p className="mt-4 text-support text-white/70">{t("reminder.shareNotice")}</p>
-
-      <p className="mt-4 text-support text-white/70">{t("settings.disclaimer")}</p>
+      <p className="mt-4 motion-fade text-support text-white/70" style={{ animationDelay: "440ms" }}>{t("reminder.shareNotice")}</p>
+      <p className="mt-4 motion-fade text-support text-white/70" style={{ animationDelay: "480ms" }}>{t("settings.disclaimer")}</p>
 
       {toast ? <Toast message={t("reminder.copied")} onDone={() => setToast(false)} /> : null}
-    </PageShell>
+    </VantagePageShell>
   );
 }

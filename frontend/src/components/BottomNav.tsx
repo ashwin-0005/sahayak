@@ -21,7 +21,8 @@ export function BottomNav() {
   return (
     <nav
       aria-label={t("a11y.navPrimary")}
-      className="fixed inset-x-0 bottom-0 z-40 mx-auto h-16 max-w-[480px] border-t border-white/12 bg-night/80 backdrop-blur-xl"
+      className="glass-panel fixed inset-x-0 bottom-0 z-40 mx-auto h-16 max-w-[480px] px-2"
+      style={{ borderRadius: "var(--radius-card) var(--radius-card) 0 0", borderBottom: "none" }}
     >
       <ul className="grid h-full grid-cols-5">
         {NAV_ITEMS.map(({ to, key, icon: Icon, end }) => (

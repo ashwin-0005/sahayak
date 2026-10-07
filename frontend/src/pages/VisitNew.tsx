@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { Mic, MicOff, X } from "lucide-react";
-import { PageShell } from "../components/PageShell";
+import { VantagePageShell } from "../components/VantagePageShell";
 import { BigButton } from "../components/BigButton";
 import { NumberPad } from "../components/NumberPad";
 import { Field } from "../components/Field";
@@ -72,7 +72,6 @@ export default function VisitNewPage() {
     return { sys, dia, sug };
   }, [systolic, diastolic, sugar]);
 
-  // Live risk preview for the plausibility gate.
   const riskPreview = useMemo(
     () =>
       assessRisk({
@@ -94,8 +93,6 @@ export default function VisitNewPage() {
   const satisfies = () => {
     if ((condition === "hypertension" || condition === "pregnancy") && (systolic === "" || diastolic === "")) return false;
     if (condition === "diabetes" && sugar === "") return false;
-    // TB: refuse a zero-data visit (missed=0, no medicine answer, no
-    // symptoms, no notes would otherwise save as a content-free ALL_OK).
     if (
       condition === "tb" &&
       missedDoses === 0 &&
@@ -148,14 +145,12 @@ export default function VisitNewPage() {
       risk_level: risk.level,
       reason_codes: risk.reasonCodes,
       advice_key: risk.adviceKey,
-      // force=true only via the "save anyway" path — records the override.
       override: force ? 1 : 0,
       created_at: visitedAt,
       updated_at: visitedAt
     };
     const nextDate = nextVisitDate(visitedAt, risk.nextVisitInDays);
     const { patient: updated, visit } = await recordVisit(patient, visitInput, nextDate);
-    // Persist so /risk/result survives a refresh (navigation state does not).
     await setMeta("lastRiskResult", { patient: updated, visit });
     navigate("/risk/result", { state: { patient: updated, visit } });
   };
@@ -185,30 +180,30 @@ export default function VisitNewPage() {
 
   if (loading)
     return (
-      <PageShell>
-        <p role="status" className="mt-10 text-center text-body text-white/70">
+      <VantagePageShell noNav>
+        <p role="status" className="mt-10 text-center text-body text-white/70 motion-fade" style={{ animationDelay: "180ms" }}>
           {t("common.loading")}
         </p>
-      </PageShell>
+      </VantagePageShell>
     );
   if (!patient)
     return (
-      <PageShell>
-        <p>{t("patients.emptyTitle")}</p>
-      </PageShell>
+      <VantagePageShell noNav>
+        <p className="motion-fade" style={{ animationDelay: "180ms" }}>{t("patients.emptyTitle")}</p>
+      </VantagePageShell>
     );
 
   return (
-    <PageShell noNav>
-      <div className="flex items-center justify-between">
-        <h1 className="text-page font-extrabold">{t("visit.title")}</h1>
+    <VantagePageShell noNav>
+      <div className="motion-fade flex items-center justify-between" style={{ animationDelay: "180ms" }}>
+        <h1 className="text-page font-extrabold text-white">{t("visit.title")}</h1>
         <button className="btn-ghost min-h-[48px] px-3" onClick={() => navigate(-1)} aria-label={t("common.back")}>
           <X className="size-6" aria-hidden="true" />
         </button>
       </div>
-      <p className="text-body font-bold text-white/80">{patient.name}</p>
+      <p className="motion-fade text-body font-bold text-white/80" style={{ animationDelay: "220ms" }}>{patient.name}</p>
 
-      <div className="mt-5 flex flex-col gap-8">
+      <div className="mt-5 motion-fade flex flex-col gap-8" style={{ animationDelay: "260ms" }}>
         {(condition === "hypertension" || condition === "pregnancy") && (
           <>
             <NumberPad value={systolic} onChange={(v) => setSystolic(v)} maxLength={3} label={t("visit.systolic")} id="systolic" />
@@ -341,6 +336,6 @@ export default function VisitNewPage() {
           </div>
         </Sheet>
       )}
-    </PageShell>
+    </VantagePageShell>
   );
 }

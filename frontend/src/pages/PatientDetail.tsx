@@ -13,7 +13,7 @@ import {
   XAxis,
   YAxis
 } from "recharts";
-import { PageShell } from "../components/PageShell";
+import { VantagePageShell } from "../components/VantagePageShell";
 import { BigButton } from "../components/BigButton";
 import { ConditionBadge } from "../components/ConditionBadge";
 import { RiskBanner } from "../components/RiskBanner";
@@ -95,46 +95,46 @@ export default function PatientDetailPage() {
 
   if (loading)
     return (
-      <PageShell>
-        <p role="status" className="mt-10 text-center text-body text-neem-dark">
+      <VantagePageShell>
+        <p role="status" className="mt-10 text-center text-body text-white/70 motion-fade" style={{ animationDelay: "180ms" }}>
           {t("common.loading")}
         </p>
-      </PageShell>
+      </VantagePageShell>
     );
-  if (!patient) return <PageShell><EmptyState icon={X} title={t("patients.emptyTitle")} /></PageShell>;
+  if (!patient) return <VantagePageShell><EmptyState icon={X} title={t("patients.emptyTitle")} /></VantagePageShell>;
 
   const last = lastVisit(visits, patient.id);
   const riskLevel = lastRisk(visits, patient.id) ?? "home";
 
   return (
-    <PageShell>
-      <div className="flex items-center justify-between">
+    <VantagePageShell>
+      <div className="motion-fade flex items-center justify-between" style={{ animationDelay: "180ms" }}>
         <h1 className="text-page font-extrabold text-white">{patient.name}</h1>
         <button className="btn-ghost min-h-[48px] px-3" onClick={() => navigate(-1)} aria-label={t("common.back")}>
           <X className="size-6" aria-hidden="true" />
         </button>
       </div>
-      <p className="text-body text-white/70">
+      <p className="motion-fade text-body text-white/70" style={{ animationDelay: "220ms" }}>
         {patient.age}, {patient.village}
       </p>
-      <div className="mt-2 flex items-center gap-2">
+      <div className="mt-2 motion-fade flex items-center gap-2" style={{ animationDelay: "260ms" }}>
         <ConditionBadge condition={patient.condition} />
       </div>
 
       {patient.next_visit_date && (
-        <p className="mt-3 flex items-center gap-1.5 text-body font-semibold text-white/70">
+        <p className="mt-3 motion-fade flex items-center gap-1.5 text-body font-semibold text-white/70" style={{ animationDelay: "300ms" }}>
           <CalendarClock className="size-5" aria-hidden="true" />
           {t("detail.nextVisit", { date: formatDate(patient.next_visit_date, i18n.language === "hi" ? "hi" : "en") })}
         </p>
       )}
 
       {last ? (
-        <div className="mt-4">
+        <div className="mt-4 motion-rise" style={{ animationDelay: "340ms" }}>
           <RiskBanner level={riskLevel} reasonKeys={last.reason_codes.map((c) => `reason.${c}` as const)} />
         </div>
       ) : null}
 
-      <div className="mt-5 grid grid-cols-3 gap-3">
+      <div className="mt-5 motion-rise grid grid-cols-3 gap-3" style={{ animationDelay: "380ms" }}>
         <BigButton variant="primary" icon={Plus} onClick={() => navigate(`/visits/${patient.id}/new`)}>
           {t("detail.logVisit")}
         </BigButton>
@@ -147,8 +147,8 @@ export default function PatientDetailPage() {
       </div>
 
       {showBp && bpData.length > 0 && (
-        <section className="card mt-6">
-          <h2 className="text-section font-extrabold">{t("detail.trendTitle")}</h2>
+        <section className="card mt-6 motion-rise" style={{ animationDelay: "440ms" }}>
+          <h2 className="text-section font-extrabold text-ink">{t("detail.trendTitle")}</h2>
           <div className="mt-3 h-56">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={bpData} margin={{ top: 8, right: 8, bottom: 0, left: -22 }}>
@@ -170,8 +170,8 @@ export default function PatientDetailPage() {
       )}
 
       {showSugar && sugarData.length > 0 && (
-        <section className="card mt-4">
-          <h2 className="text-section font-extrabold">{t("detail.sugarTrendTitle")}</h2>
+        <section className="card mt-4 motion-rise" style={{ animationDelay: "500ms" }}>
+          <h2 className="text-section font-extrabold text-ink">{t("detail.sugarTrendTitle")}</h2>
           <div className="mt-3 h-56">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={sugarData} margin={{ top: 8, right: 8, bottom: 0, left: -22 }}>
@@ -189,8 +189,8 @@ export default function PatientDetailPage() {
         </section>
       )}
 
-      <section className="mt-6">
-        <h2 className="text-section font-extrabold">{t("detail.visitsTitle")}</h2>
+      <section className="mt-6 motion-fade" style={{ animationDelay: "560ms" }}>
+        <h2 className="text-section font-extrabold text-white">{t("detail.visitsTitle")}</h2>
         {visits.length > 50 ? (
           <p role="status" className="mt-1 text-support text-white/70">
             {t("detail.showingRecent", { count: 50, total: visits.length })}
@@ -212,7 +212,7 @@ export default function PatientDetailPage() {
               .map((v) => (
                 <div key={v.id} className="card">
                   <div className="flex items-center justify-between">
-                    <p className="text-body font-extrabold">
+                    <p className="text-body font-extrabold text-ink">
                       {formatDate(v.visited_at, i18n.language === "hi" ? "hi" : "en")}{" "}
                       <span className="text-support font-normal text-neem-dark">
                         {formatTime(v.visited_at, i18n.language === "hi" ? "hi" : "en")}
@@ -240,9 +240,9 @@ export default function PatientDetailPage() {
                     {v.missed_doses > 0 ? ` · ${t("visit.missedDoses")}: ${v.missed_doses}` : null}
                   </p>
                   {v.symptoms.length > 0 && (
-<p className="mt-1 text-support text-neem-dark">
-  {v.symptoms.map((s) => t(`symptom.${s}`)).join(", ")}
-</p>
+                    <p className="mt-1 text-support text-neem-dark">
+                      {v.symptoms.map((s) => t(`symptom.${s}`)).join(", ")}
+                    </p>
                   )}
                 </div>
               ))
@@ -257,7 +257,7 @@ export default function PatientDetailPage() {
         describedBy="summary-text"
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-section font-extrabold">{t("detail.shareSummary")}</h2>
+          <h2 className="text-section font-extrabold text-ink">{t("detail.shareSummary")}</h2>
         </div>
         <textarea
           id="summary-text"
@@ -282,6 +282,6 @@ export default function PatientDetailPage() {
       {toast ? (
         <Toast message={t("detail.copied")} onDone={() => setToast(false)} />
       ) : null}
-    </PageShell>
+    </VantagePageShell>
   );
 }

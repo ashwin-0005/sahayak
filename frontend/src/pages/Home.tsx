@@ -11,10 +11,9 @@ import {
   CirclePlus,
   CloudUpload,
   Hourglass,
-  UserRound,
   Users
 } from "lucide-react";
-import { PageShell } from "../components/PageShell";
+import { VantagePageShell } from "../components/VantagePageShell";
 import { SyncStatus } from "../components/SyncStatus";
 import { PatientCard } from "../components/PatientCard";
 import { FilterTabs, type FilterOption } from "../components/FilterTabs";
@@ -47,7 +46,6 @@ interface QueueItem {
 
 const MAX_LIST = 30;
 
-// The most urgent action stays pinned on top, then the rest of the queue.
 const GROUP_ORDER: GroupKey[] = ["urgent", "dueToday", "overdue", "upcoming", "waitingSync"];
 
 const URGENCY_LEGEND: { risk: RiskLevel; instructKey: string }[] = [
@@ -75,7 +73,6 @@ export default function HomePage() {
   const addFollowUpRef = useRef<HTMLDivElement>(null);
   const [navEl, setNavEl] = useState<HTMLElement | null>(null);
 
-  // First-run tour: shown only once per device, tracked in Dexie meta (not localStorage).
   useEffect(() => {
     let cancelled = false;
     void (async () => {
@@ -83,7 +80,6 @@ export default function HomePage() {
         const seen = await getMeta(TOUR_SEEN_KEY);
         if (!cancelled && !seen) setShowTour(true);
       } catch {
-        // IndexedDB unavailable — skip tour rather than block the page.
       }
     })();
     return () => {
@@ -91,7 +87,6 @@ export default function HomePage() {
     };
   }, []);
 
-  // Bottom nav is outside PageShell; capture it once the tour is active.
   useEffect(() => {
     if (!showTour) return;
     setNavEl(document.querySelector<HTMLElement>("nav[aria-label]"));
@@ -107,12 +102,8 @@ export default function HomePage() {
     void load();
   }, []);
 
-  // Cold-start guard: the queue can mount before the first pull lands, then
-  // stay stale-empty — reload once a background sync settles.
   useReloadOnSync(load);
 
-  // Refresh the "waiting to sync" patient set whenever the outbox size changes
-  // (rows are acked and removed after each successful sync).
   useEffect(() => {
     let alive = true;
     void (async () => {
@@ -124,7 +115,6 @@ export default function HomePage() {
           if (row.table === "patients" && rec.id) ids.add(rec.id);
           else if (row.table === "visits" && rec.patient_id) ids.add(rec.patient_id);
         } catch {
-          // Corrupt outbox rows are quarantined by the sync engine.
         }
       }
       if (alive) {
@@ -141,7 +131,6 @@ export default function HomePage() {
     setLoadError(false);
     try {
       setPatients(await getAllPatients());
-      // One read, not N per-patient transactions.
       setVisits(await getAllVisits());
     } catch {
       setLoadError(true);
@@ -150,8 +139,6 @@ export default function HomePage() {
     }
   }
 
-  // Full follow-up queue: patients with a scheduled next visit, ordered by
-  // next_visit_date so overdue items (earliest date) come first.
   const queue = useMemo<QueueItem[]>(() => {
     return patients
       .filter((p) => p.next_visit_date !== null)
@@ -205,7 +192,7 @@ export default function HomePage() {
       icon: AlertOctagon
     },
     dueToday: { title: t("home.groupDueToday"), explain: t("home.dueTodayExplain"), color: colorToken.neem, icon: CalendarClock },
-    overdue: { title: t("home.groupOverdue"), explain: t("home.overdueExplain"), color: colorToken.clinic, icon: Hourglass },
+    overdue: { title: t("home.groupOverdue"), explain: t("home.overExplain"), color: colorToken.clinic, icon: Hourglass },
     upcoming: { title: t("home.groupUpcoming"), explain: t("home.upcomingExplain"), color: colorToken.home, icon: CalendarDays },
     waitingSync: { title: t("home.groupWaitingSync"), explain: t("home.waitingSyncExplain"), color: colorToken["neem-dark"], icon: CloudUpload }
   };
@@ -231,23 +218,10 @@ export default function HomePage() {
     { key: "needsSync", label: t("home.needsSync"), count: formatNumber(counts.needsSync, lng) }
   ];
 
-  const header = (
-    <header className="flex items-center justify-between">
-      <div className="min-w-0">
-        <h1 className="truncate text-page font-extrabold text-white">
-          {t("home.greeting", { name: session?.worker.name ?? "" })}
-        </h1>
-        <p className="text-body text-white/70">{formatDay(todayUTC(), lng)}</p>
-      </div>
-      <UserRound className="size-9 shrink-0 text-neem" aria-hidden="true" />
-    </header>
-  );
-
   if (!loaded) {
     return (
-      <PageShell>
-        {header}
-        <div className="mt-4">
+      <VantagePageShell>
+        <div className="mt-4 motion-fade" style={{ animationDelay: "180ms" }}>
           <SyncStatus onSynced={() => void load()} />
         </div>
         <div className="mt-5 grid grid-cols-4 gap-2" aria-hidden="true">
@@ -261,15 +235,14 @@ export default function HomePage() {
             <DueListSkeleton count={3} />
           </div>
         </section>
-      </PageShell>
+      </VantagePageShell>
     );
   }
 
   if (loadError) {
     return (
-      <PageShell>
-        {header}
-        <div className="mt-5">
+      <VantagePageShell>
+        <div className="mt-5 motion-fade" style={{ animationDelay: "180ms" }}>
           <Alert
             tone="danger"
             title={t("home.errorTitle")}
@@ -281,25 +254,30 @@ export default function HomePage() {
             }}
           />
         </div>
-      </PageShell>
+      </VantagePageShell>
     );
   }
 
   return (
-    <PageShell>
-      {header}
+    <VantagePageShell>
+      <div className="motion-fade" style={{ animationDelay: "180ms" }}>
+        <h1 className="truncate text-page font-extrabold text-white">
+          {t("home.greeting", { name: session?.worker.name ?? "" })}
+        </h1>
+        <p className="text-body text-white/70">{formatDay(todayUTC(), lng)}</p>
+      </div>
 
-      <div ref={syncRef} className="mt-4">
+      <div ref={syncRef} className="mt-4 motion-fade" style={{ animationDelay: "240ms" }}>
         <SyncStatus onSynced={() => void load()} />
       </div>
 
       {offline ? (
-        <div className="mt-3">
+        <div className="mt-3 motion-fade" style={{ animationDelay: "300ms" }}>
           <Alert tone="offline" title={t("home.offlineTitle")} body={t("home.offlineBody")} />
         </div>
       ) : null}
       {!offline && sync.status === "error" ? (
-        <div className="mt-3">
+        <div className="mt-3 motion-fade" style={{ animationDelay: "300ms" }}>
           <Alert
             tone="danger"
             title={t("status.error")}
@@ -310,18 +288,18 @@ export default function HomePage() {
         </div>
       ) : null}
 
-      <div ref={addFollowUpRef} className="mt-4">
+      <div ref={addFollowUpRef} className="mt-4 motion-rise" style={{ animationDelay: "360ms" }}>
         <BigButton icon={CirclePlus} className="w-full" onClick={() => navigate("/patients/new")}>
           {t("home.addFollowUp")}
         </BigButton>
       </div>
 
-      <div className="mt-4">
+      <div className="mt-4 motion-fade" style={{ animationDelay: "420ms" }}>
         <FilterTabs options={options} value={filter} onChange={setFilter} label={t("home.filterA11y")} />
       </div>
 
       {groups.length === 0 ? (
-        <section className="mt-6" aria-live="polite">
+        <section className="mt-6 motion-fade" style={{ animationDelay: "480ms" }} aria-live="polite">
           <EmptyState
             icon={EMPTY[filter].icon}
             title={EMPTY[filter].title}
@@ -360,7 +338,7 @@ export default function HomePage() {
       )}
 
       {groups.length > 0 && totalShown > MAX_LIST ? (
-        <div className="mt-5">
+        <div className="mt-5 motion-rise" style={{ animationDelay: "540ms" }}>
           <BigButton variant="secondary" className="w-full" onClick={() => navigate("/patients")}>
             {t("home.seeAllPatients")}
           </BigButton>
@@ -372,7 +350,7 @@ export default function HomePage() {
 
       {showTour && loaded && navEl ? <Tour targets={tourTargets} onDone={dismissTour} /> : null}
 
-      <details className="mt-5">
+      <details className="mt-5 motion-fade" style={{ animationDelay: "600ms" }}>
         <summary className="flex w-fit cursor-pointer list-none items-center gap-1.5 text-support font-semibold text-white/70 underline decoration-white/40 underline-offset-4 hover:text-white">
           <CircleHelp className="size-4" aria-hidden="true" />
           {t("home.legendTitle")}
@@ -399,6 +377,6 @@ export default function HomePage() {
           </ul>
         </div>
       </details>
-    </PageShell>
+    </VantagePageShell>
   );
 }

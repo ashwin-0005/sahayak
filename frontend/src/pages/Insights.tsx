@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { CalendarCheck, CalendarClock, ChartNoAxesColumn, CircleHelp, MapPin, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { PageShell } from "../components/PageShell";
+import { VantagePageShell } from "../components/VantagePageShell";
 import { EmptyState } from "../components/EmptyState";
 import { SummaryCardSkeleton } from "../components/Skeleton";
 import { getAllPatients, getAllVisits } from "../db/repo";
@@ -50,7 +50,6 @@ export default function InsightsPage() {
     })();
   }, []);
 
-  // Cold-start guard: reload once a background sync settles (see useReloadOnSync).
   useReloadOnSync(() => {
     void (async () => {
       setPatients(await getAllPatients());
@@ -72,29 +71,27 @@ export default function InsightsPage() {
     { icon: CalendarCheck, labelKey: "insights.visits7", value: stats.visitsLast7 }
   ];
 
-  // Risk rows are clinical: risk colours are reserved for them, and each row
-  // carries icon + label + count, never colour alone.
   const riskRows: RiskLevel[] = ["urgent", "clinic", "home"];
 
   return (
-    <PageShell>
-      <header className="flex items-center justify-between">
+    <VantagePageShell>
+      <div className="motion-fade flex items-center justify-between" style={{ animationDelay: "180ms" }}>
         <div className="min-w-0">
           <h1 className="truncate text-page font-extrabold text-white">{t("insights.title")}</h1>
           <p className="text-body text-white/70">{t("insights.subtitle")}</p>
         </div>
         <ChartNoAxesColumn className="size-9 shrink-0 text-neem" aria-hidden="true" />
-      </header>
+      </div>
 
       {!loaded ? (
-        <div className="mt-section grid grid-cols-2 gap-card" aria-hidden="true">
+        <div className="mt-section grid grid-cols-2 gap-card motion-fade" aria-hidden="true" style={{ animationDelay: "240ms" }}>
           <SummaryCardSkeleton />
           <SummaryCardSkeleton />
           <SummaryCardSkeleton />
           <SummaryCardSkeleton />
         </div>
       ) : stats.totalPatients === 0 ? (
-        <div className="mt-section">
+        <div className="mt-section motion-fade" style={{ animationDelay: "240ms" }}>
           <EmptyState
             icon={ChartNoAxesColumn}
             title={t("insights.emptyTitle")}
@@ -105,9 +102,9 @@ export default function InsightsPage() {
         </div>
       ) : (
         <>
-          <div className="mt-section grid grid-cols-2 gap-card">
-            {tiles.map(({ icon: Icon, labelKey, value }) => (
-              <div key={labelKey} className="card flex flex-col items-center gap-1 text-center">
+          <div className="mt-section grid grid-cols-2 gap-card motion-fade" style={{ animationDelay: "240ms" }}>
+            {tiles.map(({ icon: Icon, labelKey, value }, index) => (
+              <div key={labelKey} className="card flex flex-col items-center gap-1 text-center motion-rise" style={{ animationDelay: `${300 + index * 80}ms` }}>
                 <Icon className="size-5 text-neem" aria-hidden="true" />
                 <p className="text-display font-extrabold leading-none tabular-nums">{formatNumber(value, lng)}</p>
                 <p className="text-support text-neem-dark">{t(labelKey)}</p>
@@ -115,7 +112,7 @@ export default function InsightsPage() {
             ))}
           </div>
 
-          <section className="card mt-section" aria-label={t("insights.visitsPerWeek")}>
+          <section className="card mt-section motion-rise" aria-label={t("insights.visitsPerWeek")} style={{ animationDelay: "420ms" }}>
             <h2 className="text-section font-extrabold text-ink">{t("insights.visitsPerWeek")}</h2>
             <p className="mt-0.5 text-support text-neem-dark">{t("insights.weekRange", { n: WEEKS })}</p>
             <div className="mt-2 h-56" aria-hidden="true">
@@ -131,7 +128,7 @@ export default function InsightsPage() {
             </div>
           </section>
 
-          <section className="card mt-section" aria-label={t("insights.riskTitle")}>
+          <section className="card mt-section motion-rise" aria-label={t("insights.riskTitle")} style={{ animationDelay: "480ms" }}>
             <h2 className="text-section font-extrabold text-ink">{t("insights.riskTitle")}</h2>
             <p className="mt-0.5 text-support text-neem-dark">{t("insights.riskSummary")}</p>
             <ul className="mt-3 flex flex-col gap-3">
@@ -166,6 +163,6 @@ export default function InsightsPage() {
           </section>
         </>
       )}
-    </PageShell>
+    </VantagePageShell>
   );
 }

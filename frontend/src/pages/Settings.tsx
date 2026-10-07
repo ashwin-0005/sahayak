@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { AlertTriangle, Download, Lock, RotateCcw, ShieldCheck, Trash2 } from "lucide-react";
-import { PageShell } from "../components/PageShell";
+import { VantagePageShell } from "../components/VantagePageShell";
 import { BigButton } from "../components/BigButton";
 import { SyncStatus } from "../components/SyncStatus";
 import { Sheet } from "../components/Sheet";
@@ -70,29 +70,33 @@ export default function SettingsPage() {
 
   if (!ready) {
     return (
-      <PageShell>
-        <p role="status" className="mt-10 text-center text-body text-white/70">
+      <VantagePageShell>
+        <p role="status" className="mt-10 text-center text-body text-white/70 motion-fade" style={{ animationDelay: "180ms" }}>
           {t("common.loading")}
         </p>
-      </PageShell>
+      </VantagePageShell>
     );
   }
 
   return (
-    <PageShell>
-      <h1 className="text-page font-extrabold">{t("settings.title")}</h1>
+    <VantagePageShell>
+      <h1 className="text-page font-extrabold motion-fade" style={{ animationDelay: "180ms" }}>
+        {t("settings.title")}
+      </h1>
 
-      <div className="mt-4">
+      <div className="mt-4 motion-fade" style={{ animationDelay: "220ms" }}>
         <SyncStatus />
       </div>
 
-      <p className="mt-4 text-body text-white/70">
+      <p className="mt-4 motion-fade text-body text-white/70" style={{ animationDelay: "260ms" }}>
         {session?.worker.name} · {session?.workerId}
       </p>
 
-      <LanguageToggle labelKey="settings.language" />
+      <div className="mt-4 motion-fade" style={{ animationDelay: "300ms" }}>
+        <LanguageToggle labelKey="settings.language" />
+      </div>
 
-      <div className="mt-4 card">
+      <div className="mt-4 card motion-rise" style={{ animationDelay: "340ms" }}>
         <p className="text-body font-bold text-ink">{t("settings.about")}</p>
         <p className="mt-1 text-support text-neem-dark">
           {t("app.name")} · {t("settings.patientCount", { count: patientCount })}
@@ -104,7 +108,7 @@ export default function SettingsPage() {
       </div>
 
       {quarantine.length > 0 ? (
-        <section aria-label={t("settings.syncIssuesTitle")} className="mt-4 card rail-danger">
+        <section aria-label={t("settings.syncIssuesTitle")} className="mt-4 card rail-danger motion-rise" style={{ animationDelay: "380ms" }}>
           <p className="flex items-center gap-2 text-body font-bold text-ink">
             <AlertTriangle className="size-5 text-danger" aria-hidden="true" />
             {t("settings.syncIssuesTitle")}
@@ -145,7 +149,7 @@ export default function SettingsPage() {
         </section>
       ) : null}
 
-      <div className="mt-4 flex flex-col gap-card">
+      <div className="mt-4 motion-fade flex flex-col gap-card" style={{ animationDelay: "420ms" }}>
         {installEvt ? (
           <BigButton variant="secondary" icon={Download} onClick={doInstall}>
             {t("settings.install")}
@@ -156,7 +160,7 @@ export default function SettingsPage() {
         </BigButton>
       </div>
 
-      <div className="mt-section flex flex-col gap-card border-t border-mist pt-4">
+      <div className="mt-section motion-rise flex flex-col gap-card border-t border-mist pt-4" style={{ animationDelay: "460ms" }}>
         <BigButton variant="dangerQuiet" icon={Trash2} onClick={() => setConfirming(true)}>
           {t("settings.reset")}
         </BigButton>
@@ -185,6 +189,6 @@ export default function SettingsPage() {
           </div>
         </Sheet>
       )}
-    </PageShell>
+    </VantagePageShell>
   );
 }

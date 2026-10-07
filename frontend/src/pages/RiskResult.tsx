@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Bell, HeartPulse, Volume2 } from "lucide-react";
-import { PageShell } from "../components/PageShell";
+import { VantagePageShell } from "../components/VantagePageShell";
 import { BigButton } from "../components/BigButton";
 import { EmptyState } from "../components/EmptyState";
 import { RISK_META } from "../lib/riskMeta";
@@ -28,8 +28,6 @@ export default function RiskResultPage() {
   const [stored, setStored] = useState<ResultState | null>(null);
   const [checking, setChecking] = useState(!navState);
 
-  // Survive a refresh: VisitNew persists every result; fall back to it when
-  // there is no navigation state (refresh, shared link, back-button).
   useEffect(() => {
     if (navState) return;
     void getMeta(LAST_RESULT_KEY).then((v) => {
@@ -51,29 +49,28 @@ export default function RiskResultPage() {
       )}. ${visit.reason_codes.map((c) => t(`reason.${c}`, { lng })).join(". ")}. ${patient.name}`;
       speak(summary, lng);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Boolean(data)]);
 
   if (checking) {
     return (
-      <PageShell noNav>
-        <p role="status" className="mt-10 text-center text-body text-white/70">
+      <VantagePageShell noNav>
+        <p role="status" className="mt-10 text-center text-body text-white/70 motion-fade" style={{ animationDelay: "180ms" }}>
           {t("common.loading")}
         </p>
-      </PageShell>
+      </VantagePageShell>
     );
   }
 
   if (!data) {
     return (
-      <PageShell noNav>
+      <VantagePageShell noNav>
         <EmptyState
           icon={HeartPulse}
           title={t("risk.noResult")}
           actionLabel={t("common.done")}
           onAction={() => navigate("/home")}
         />
-      </PageShell>
+      </VantagePageShell>
     );
   }
 
@@ -92,7 +89,7 @@ export default function RiskResultPage() {
   };
 
   return (
-    <PageShell noNav>
+    <VantagePageShell noNav>
       {/* The one deliberate "moment": the risk color fills the screen with
           its icon centered, then fades to reveal the hero band while the
           message and actions rise in a beat after. Reduced motion collapses
@@ -121,7 +118,7 @@ export default function RiskResultPage() {
       </div>
 
       <div className="mv-risk-reveal card mt-4" style={{ animationDelay: "0.52s" }}>
-        <p className="text-section font-extrabold">{t(`risk.${ADVICE_KEY[visit.advice_key]}`)}</p>
+        <p className="text-section font-extrabold text-ink">{t(`risk.${ADVICE_KEY[visit.advice_key]}`)}</p>
         <p className="mt-2 text-body text-neem-dark">
           {t("risk.nextVisit")}: {patient.next_visit_date ? formatDate(patient.next_visit_date, lng) : "—"}
         </p>
@@ -143,6 +140,6 @@ export default function RiskResultPage() {
           {t("risk.done")}
         </BigButton>
       </div>
-    </PageShell>
+    </VantagePageShell>
   );
 }

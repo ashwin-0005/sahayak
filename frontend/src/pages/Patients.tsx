@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FolderSearch, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { PageShell } from "../components/PageShell";
+import { VantagePageShell } from "../components/VantagePageShell";
 import { PatientCard } from "../components/PatientCard";
 import { EmptyState } from "../components/EmptyState";
 import { PatientListSkeleton } from "../components/Skeleton";
@@ -28,13 +28,11 @@ export default function PatientsPage() {
     void (async () => {
       const ps = await getAllPatients();
       setPatients(ps);
-      // One read, not N per-patient transactions.
       setVisits(await getAllVisits());
       setLoaded(true);
     })();
   }, []);
 
-  // Cold-start guard: reload once a background sync settles (see useReloadOnSync).
   useReloadOnSync(() => {
     void (async () => {
       setPatients(await getAllPatients());
@@ -49,7 +47,7 @@ export default function PatientsPage() {
       .filter((p) => {
         if (!showOverdue) return true;
         const od = overdueDays(p);
-        return od !== null && od > 0; // strictly overdue (today is not overdue)
+        return od !== null && od > 0;
       })
       .filter((p) => {
         if (!showUrgent) return true;
@@ -75,10 +73,12 @@ export default function PatientsPage() {
 
   if (!loaded) {
     return (
-      <PageShell>
-        <h1 className="text-page font-extrabold">{t("patients.title")}</h1>
+      <VantagePageShell>
+        <h1 className="text-page font-extrabold motion-fade" style={{ animationDelay: "180ms" }}>
+          {t("patients.title")}
+        </h1>
 
-        <label className="mt-4 flex min-h-[56px] items-center gap-2 rounded-button border border-mist bg-white px-4">
+        <label className="mt-4 motion-fade flex min-h-[56px] items-center gap-2 rounded-button border border-mist bg-white px-4" style={{ animationDelay: "240ms" }}>
           <Search className="size-5 text-neem" aria-hidden="true" />
           <span className="sr-only">{t("patients.search")}</span>
           <input
@@ -91,9 +91,10 @@ export default function PatientsPage() {
         </label>
 
         <div
-          className="no-scrollbar -mx-4 mt-3 flex items-center gap-2 overflow-x-auto px-4 pb-1"
+          className="no-scrollbar -mx-4 mt-3 motion-fade flex items-center gap-2 overflow-x-auto px-4 pb-1"
           role="group"
           aria-label={t("patients.conditionFilter")}
+          style={{ animationDelay: "300ms" }}
         >
           {FILTERS.map((c) => (
             <button
@@ -115,18 +116,20 @@ export default function PatientsPage() {
           </button>
         </div>
 
-        <div className="mt-4 flex flex-col gap-3">
+        <div className="mt-4 motion-fade flex flex-col gap-3" style={{ animationDelay: "360ms" }}>
           <PatientListSkeleton count={4} />
         </div>
-      </PageShell>
+      </VantagePageShell>
     );
   }
 
   return (
-    <PageShell>
-      <h1 className="text-page font-extrabold">{t("patients.title")}</h1>
+    <VantagePageShell>
+      <h1 className="text-page font-extrabold motion-fade" style={{ animationDelay: "180ms" }}>
+        {t("patients.title")}
+      </h1>
 
-      <label className="mt-4 flex min-h-[56px] items-center gap-2 rounded-button border border-mist bg-white px-4">
+      <label className="mt-4 motion-fade flex min-h-[56px] items-center gap-2 rounded-button border border-mist bg-white px-4" style={{ animationDelay: "240ms" }}>
         <Search className="size-5 text-neem" aria-hidden="true" />
         <span className="sr-only">{t("patients.search")}</span>
         <input
@@ -138,9 +141,10 @@ export default function PatientsPage() {
       </label>
 
       <div
-        className="no-scrollbar -mx-4 mt-3 flex items-center gap-2 overflow-x-auto px-4 pb-1"
+        className="no-scrollbar -mx-4 mt-3 motion-fade flex items-center gap-2 overflow-x-auto px-4 pb-1"
         role="group"
         aria-label={t("patients.conditionFilter")}
+        style={{ animationDelay: "300ms" }}
       >
         {FILTERS.map((c) => (
           <button
@@ -177,7 +181,7 @@ export default function PatientsPage() {
         </button>
       </div>
 
-      <div className="mt-4 flex flex-col gap-3">
+      <div className="mt-4 motion-fade flex flex-col gap-3" style={{ animationDelay: "360ms" }}>
         {filtered.length === 0 ? (
           <EmptyState
             icon={FolderSearch}
@@ -198,6 +202,6 @@ export default function PatientsPage() {
           </>
         )}
       </div>
-    </PageShell>
+    </VantagePageShell>
   );
 }
